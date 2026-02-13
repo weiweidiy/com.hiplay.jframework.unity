@@ -8,7 +8,7 @@
   "keywords": [ "keyword1", "keyword2" ],
   "category": "framework",
   "dependencies": {
-    "com.hiplay.jframework": "https://github.com/weiweidiy/com.hiplay.jframwork.git"
+    "com.hiplay.jframework": "1.0.0"
   },
   "author": {
     "name": "Jichunwei",
