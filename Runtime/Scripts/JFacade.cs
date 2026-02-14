@@ -4,10 +4,16 @@ using UnityEngine;
 
 namespace JFramework.Unity
 {
-    public class JFacade : IJUIManager 
+    public class JFacade : IJUIManager, IJNetworkable
     {
+        /// <summary>
+        /// UI管理器
+        /// </summary>
         IJUIManager uiManager;
 
+        /// <summary>
+        /// 网络管理器
+        /// </summary>
         IJNetwork networkManager;
 
         public JFacade(IJUIManager uiManager, IJNetwork networkManager)
@@ -16,20 +22,11 @@ namespace JFramework.Unity
             this.networkManager = networkManager;
         }
 
+
         #region UI接口
         public void CloseWindow(string screenId)
         {
             uiManager.CloseWindow(screenId);
-        }
-
-        public Task Connect(string url, string token = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Disconnect()
-        {
-            throw new NotImplementedException();
         }
 
         public Camera GetUICamera()
@@ -47,10 +44,6 @@ namespace JFramework.Unity
             uiManager.HidePanel(screenId);
         }
 
-        public bool IsConnecting()
-        {
-            throw new NotImplementedException();
-        }
 
         public bool IsPanelOpen(string screenId)
         {
@@ -75,6 +68,30 @@ namespace JFramework.Unity
         public IPanelController ShowPanel<TArg>(string screenId, TArg properties, bool asNew = false) where TArg : IPanelProperties
         {
             return uiManager.ShowPanel(screenId, properties, asNew);
+        }
+
+
+        #endregion
+
+        #region 网络接口
+        public bool IsConnecting()
+        {
+            return networkManager.IsConnecting();
+        }
+
+        Task<TResponse> IJNetworkable.SendMessage<TResponse>(IJNetMessage pMsg, TimeSpan? timeout)
+        {
+            return networkManager.SendMessage<TResponse>(pMsg, timeout);
+        }
+
+        public Task Connect(string url, string token = null)
+        {
+            return networkManager.Connect(url, token);
+        }
+
+        public void Disconnect()
+        {
+            networkManager.Disconnect();
         }
         #endregion
     }

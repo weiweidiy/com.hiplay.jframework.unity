@@ -8,7 +8,6 @@
   "keywords": [ "keyword1", "keyword2" ],
   "category": "framework",
   "dependencies": {
-    "com.hiplay.jframework": "1.0.4"
   },
   "author": {
     "name": "Jichunwei",
