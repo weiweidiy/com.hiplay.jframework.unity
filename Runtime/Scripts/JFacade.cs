@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace JFramework.Unity
 {
-    public class JFacade : IJUIManager, IJNetworkable
+
+    public class JFacade : IJUIManager, IJNetworkable, ISceneStateMachineAsync
     {
         /// <summary>
         /// UI管理器
@@ -16,14 +17,55 @@ namespace JFramework.Unity
         /// </summary>
         IJNetwork networkManager;
 
-        public JFacade(IJUIManager uiManager, IJNetwork networkManager)
+        /// <summary>
+        /// 资源加载器
+        /// </summary>
+        IAssetsLoader assetsLoader;
+
+        /// <summary>
+        /// 消息事件管理器
+        /// </summary>
+        EventManager eventManager;
+
+        /// <summary>
+        /// 场景状态机
+        /// </summary>
+        ISceneStateMachineAsync sm;
+
+        /// <summary>
+        /// 第一个场景状态，框架启动后会自动切换到这个状态，通常是登录场景
+        /// </summary>
+        string firstSceneState;
+
+        public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
+            , ISceneStateMachineAsync sm, string firstSceneState)
         {
-            this.uiManager = uiManager;
             this.networkManager = networkManager;
+            this.uiManager = uiManager;
+            this.assetsLoader = assetsLoader;
+            this.eventManager = eventManager;
+            this.sm = sm;
+            this.firstSceneState = firstSceneState;
         }
 
+        public void Run()
+        {
+            SwitchToState(firstSceneState);
+        }
+
+        #region 场景状态机接口
+        public Task SwitchToState(string stateName)
+        {
+            return sm.SwitchToState(stateName);
+        }
+        #endregion
 
         #region UI接口
+        public Task Initialize(string uiSettingName)
+        {
+            return uiManager.Initialize(uiSettingName);
+        }
+
         public void CloseWindow(string screenId)
         {
             uiManager.CloseWindow(screenId);
@@ -76,23 +118,43 @@ namespace JFramework.Unity
         #region 网络接口
         public bool IsConnecting()
         {
+            if(networkManager == null)
+            {
+                Debug.LogError("[JFacade] Network manager is not set!");
+                return false;
+            }
             return networkManager.IsConnecting();
         }
 
         Task<TResponse> IJNetworkable.SendMessage<TResponse>(IJNetMessage pMsg, TimeSpan? timeout)
         {
+            if(networkManager == null)
+            {
+                Debug.LogError("[JFacade] Network manager is not set!");
+                return Task.FromResult(default(TResponse));
+            }
             return networkManager.SendMessage<TResponse>(pMsg, timeout);
         }
 
         public Task Connect(string url, string token = null)
         {
+            if(networkManager == null) {
+                Debug.LogError("[JFacade] Network manager is not set!");
+                return Task.CompletedTask;
+            }
             return networkManager.Connect(url, token);
         }
 
         public void Disconnect()
         {
+            if (networkManager != null)
+            {
+                Debug.LogWarning("[JFacade] Network manager is not set!");
+                return;
+            }
             networkManager.Disconnect();
         }
+
         #endregion
     }
 }

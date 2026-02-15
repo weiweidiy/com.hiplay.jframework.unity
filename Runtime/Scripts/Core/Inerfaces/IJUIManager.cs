@@ -8,6 +8,14 @@ namespace JFramework.Unity
     public interface IJUIManager
     {
         /// <summary>
+        /// 初始化UI管理器
+        /// </summary>
+        /// <param name="uiSettingName"></param>
+        /// <returns></returns>
+        Task Initialize(string uiSettingName);
+
+
+        /// <summary>
         /// 显示panel
         /// </summary>
         /// <param name="screenId"></param>
