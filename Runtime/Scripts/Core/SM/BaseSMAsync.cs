@@ -12,7 +12,7 @@ namespace JFramework.Unity
     /// <summary>
     /// 游戏状态机-> Login , Game 等等 
     /// </summary>
-    public abstract class BaseSMAsync<TContext, TState, TTrigger>: ISceneStateMachineAsync where TState : BaseStateAsync<TContext>
+    public abstract class BaseSMAsync<TContext, TState, TTrigger> : ISceneStateMachineAsync where TState : BaseStateAsync<TContext> where TContext : GameContext
     {
 
         public class SMConfig
@@ -33,7 +33,7 @@ namespace JFramework.Unity
         /// <summary>
         /// 
         /// </summary>
-        TContext context;
+        protected TContext context;
 
         /// <summary>
         /// 所有状态列表
@@ -41,16 +41,9 @@ namespace JFramework.Unity
         List<TState> states;
 
 
-        protected IAssetsLoader assetsLoader;
-        protected IJUIManager uiManager;
-        protected EventManager eventManager;
-
-        public BaseSMAsync(IAssetsLoader assetsLoader, IJUIManager uiManager, EventManager eventManager, TContext context)
+        public BaseSMAsync()
         {
-            this.assetsLoader = assetsLoader;
-            this.uiManager = uiManager;
-            this.eventManager = eventManager;
-            this.context = context;
+
             Initialize();
         }
 
@@ -61,6 +54,7 @@ namespace JFramework.Unity
         /// <exception cref="Exception"></exception>
         void Initialize()
         {
+
             //从子类获取所有状态实例
             states = GetAllStates();
 
@@ -140,5 +134,8 @@ namespace JFramework.Unity
         /// </summary>
         /// <param name="stateName"></param>
         public abstract Task SwitchToState(string stateName);
+
+        public abstract void SetContext(GameContext context);
+
     }
 }

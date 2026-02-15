@@ -4,13 +4,12 @@ using UnityEngine;
 
 namespace JFramework.Unity
 {
-
-    public class JFacade : IJUIManager, IJNetworkable, ISceneStateMachineAsync
+    public class JFacade : IJUIManager, IJNetworkable, ISceneSwitchAble, IJFacade
     {
         /// <summary>
         /// UI管理器
         /// </summary>
-        IJUIManager uiManager;
+        public IJUIManager uiManager;
 
         /// <summary>
         /// 网络管理器
@@ -20,12 +19,12 @@ namespace JFramework.Unity
         /// <summary>
         /// 资源加载器
         /// </summary>
-        IAssetsLoader assetsLoader;
+        public IAssetsLoader assetsLoader;
 
         /// <summary>
         /// 消息事件管理器
         /// </summary>
-        EventManager eventManager;
+        public EventManager eventManager;
 
         /// <summary>
         /// 场景状态机
@@ -52,6 +51,18 @@ namespace JFramework.Unity
         {
             SwitchToState(firstSceneState);
         }
+
+        #region Facade接口
+        public IAssetsLoader GetAssetsLoader()
+        {
+            return assetsLoader;
+        }
+
+        public IJUIManager GetUIManager()
+        {
+            return uiManager;
+        }
+        #endregion
 
         #region 场景状态机接口
         public Task SwitchToState(string stateName)
@@ -154,6 +165,12 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
+
+
+
+
+
+
 
         #endregion
     }

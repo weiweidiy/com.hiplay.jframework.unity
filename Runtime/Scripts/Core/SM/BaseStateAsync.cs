@@ -6,7 +6,7 @@ namespace JFramework.Unity
     /// 
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
-    public abstract class BaseStateAsync<TContext>
+    public abstract class BaseStateAsync<TContext> where TContext : GameContext
     {
         /// <summary>
         /// 上下文
@@ -49,7 +49,10 @@ namespace JFramework.Unity
         /// <summary>
         /// 事件监听器，在状态进入时调用，子类重写
         /// </summary>
-        public virtual void AddListeners() { }
-        public virtual void RemoveListeners() { }
+        protected virtual void AddListeners() { }
+        protected virtual void RemoveListeners() { }
+
+        protected IAssetsLoader GetAssetsLoader() => context.Facade.GetAssetsLoader();
+        protected IJUIManager GetUIManager() => context.Facade.GetUIManager();
     }
 }

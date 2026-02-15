@@ -14,6 +14,8 @@
 
         string firstSceneState;
 
+        GameContext context;
+
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -31,17 +33,26 @@
                 eventManager = new EventManager();
             }
 
+            if (context == null)
+            {
+                context = new GameContext();
+            }
+
             if (sm == null)
             {
-                sm = new DefaultSceneSM(assetsLoader, uiManager, eventManager, new DefaultSceneSMContext());
+                throw new System.Exception("SceneStateMachine is required but not set in FacadeBuilder!");
             }
 
-            if(firstSceneState == null)
+            if (firstSceneState == null)
             {
-                firstSceneState = DefaultSceneType.SceneLogin.ToString();
+                throw new System.Exception("FirstSceneState is required but not set in FacadeBuilder!");
             }
 
-            return new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState);
+            var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState);
+            context.Facade = facade;
+            sm.SetContext(context);
+
+            return facade;
         }
 
         public FacadeBuilder SetAssetsLoader(IAssetsLoader assetsLoader)
@@ -77,6 +88,12 @@
         public FacadeBuilder SetFirstSceneState(string firstSceneState)
         {
             this.firstSceneState = firstSceneState;
+            return this;
+        }
+
+        public FacadeBuilder SetGameContext(GameContext context)
+        {
+            this.context = context;
             return this;
         }
     }

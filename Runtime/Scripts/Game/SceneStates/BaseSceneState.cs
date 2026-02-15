@@ -14,10 +14,10 @@ namespace JFramework.Unity
     /// 默认的场景状态基类，提供了切换场景、初始化UI管理器、播放BGM等功能，子类只需要实现具体的场景类型、UI设置、BGM等信息即可
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
-    public abstract class BaseSceneState<TContext,TSceneType> : BaseStateAsync<TContext>
+    public abstract class BaseSceneState<TContext,TSceneType> : BaseStateAsync<TContext> where TContext : GameContext
     {
         //[Inject]
-        protected IAssetsLoader assetsLoader;
+        //protected IAssetsLoader assetsLoader;
         //[Inject]
         //protected IInjectionContainer container;
         ///// <summary>
@@ -26,47 +26,55 @@ namespace JFramework.Unity
         //[Inject]
         //protected TiktokGameObjectManager gameObjectManager;
         //[Inject]
-        protected IJUIManager uiManager;
+        //protected IJUIManager uiManager;
         //[Inject]
         //protected IGameAudioManager gameAudioManager;
         //[Inject]
         //protected TiktokConfigManager tiktokConfigManager;
         //[Inject]
-        protected EventManager eventManager;
+        //protected EventManager eventManager;
         //[Inject]
-        protected List<ViewController> viewControllers;
+        //protected List<ViewController> viewControllers;
         /// <summary>
         /// 状态参数
         /// </summary>
         protected object arg;
 
         
-        public BaseSceneState(IAssetsLoader assetsLoader, IJUIManager uiManager, EventManager eventManager)
-        {
-            this.assetsLoader = assetsLoader;
-            this.uiManager = uiManager;
-            this.eventManager = eventManager;
-        }
+        //public BaseSceneState(IAssetsLoader assetsLoader)
+        //{
+        //    this.assetsLoader = assetsLoader;
+        //    //this.uiManager = uiManager;
+        //    //this.eventManager = eventManager;
+        //}
 
         protected override async UniTask OnEnter(object arg)
         {
             this.arg = arg;
             Debug.Log("Enter " + this.GetType());
-            //切换到当前状态的场景
-            var scene = await SwitchScene(GetSceneType().ToString(), SceneMode.Additive);
+            try
+            {
+                //切换到当前状态的场景
+                var scene = await SwitchScene(GetSceneType().ToString(), SceneMode.Additive);
+                //设置为活动场景
+                SceneManager.SetActiveScene(scene);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("切换场景失败 " + GetSceneType().ToString() + " " + e.ToString());
+                throw;
+            }
 
-            //设置为活动场景
-            SceneManager.SetActiveScene(scene);
 
             // 创建一个根节点，所有的游戏对象都挂在这个节点下，方便管理
             var root = new GameObject("GoRoot");
             //gameObjectManager.GoRoot = root;
 
             //初始化ui管理器
-            await InitUiManager();
+            await GetUIManager().Initialize(GetUISettingsName());
 
             // 启动所有的ViewController
-            StartAllVeiwControllers();
+            //StartAllVeiwControllers();
 
             //播放场景BGM
             await PlayBGM();
@@ -90,41 +98,34 @@ namespace JFramework.Unity
             await base.OnExit();
         }
 
-        /// <summary>
-        /// 初始化场景所有的ViewController
-        /// </summary>
-        protected virtual void StartAllVeiwControllers()
-        {
-            // 启动所有的ViewController
-            foreach (var controller in GetControllers())
-            {
-                viewControllers.Add(controller);
-            }
+        ///// <summary>
+        ///// 初始化场景所有的ViewController
+        ///// </summary>
+        //protected virtual void StartAllVeiwControllers()
+        //{
+        //    // 启动所有的ViewController
+        //    foreach (var controller in GetControllers())
+        //    {
+        //        viewControllers.Add(controller);
+        //    }
 
-            OnInitializeVeiwControllers(viewControllers);
+        //    OnInitializeVeiwControllers(viewControllers);
 
-            foreach(var controller in viewControllers)
-            {
-                controller.OnStart();
-            }
+        //    foreach(var controller in viewControllers)
+        //    {
+        //        controller.OnStart();
+        //    }
 
-            //Debug.Log(GetSceneType().ToString() + " StartAllVeiwControllers done : " + viewControllers.Count());
-        }
+        //    //Debug.Log(GetSceneType().ToString() + " StartAllVeiwControllers done : " + viewControllers.Count());
+        //}
 
         /// <summary>
         /// 提供给子类重写，添加额外的ViewController
         /// </summary>
         /// <param name="viewControllers"></param>
-        protected virtual void OnInitializeVeiwControllers(List<ViewController> viewControllers) { }
+        //protected virtual void OnInitializeVeiwControllers(List<ViewController> viewControllers) { }
 
-        /// <summary>
-        /// 初始化UI管理器
-        /// </summary>
-        /// <returns></returns>
-        protected virtual Task InitUiManager()
-        {
-            return uiManager.Initialize(GetUISettingsName());
-        }
+
 
         /// <summary>
         /// 播放BGM
@@ -144,11 +145,11 @@ namespace JFramework.Unity
         /// <returns></returns>
         protected UniTask<Scene> SwitchScene(string sceneName, SceneMode sceneMode)
         {
-            return assetsLoader.LoadSceneAsync(sceneName, sceneMode).AsUniTask();
+            return GetAssetsLoader().LoadSceneAsync(sceneName, sceneMode).AsUniTask();
         }
 
 
-        protected abstract ViewController[] GetControllers();
+        //protected abstract ViewController[] GetControllers();
 
         protected abstract TSceneType GetSceneType();
 
@@ -162,7 +163,7 @@ namespace JFramework.Unity
         //        throw new System.Exception(this.GetType().ToString() + " Inject TiktokGameObjectManager failed!");
 
         //    if (uiManager == null)
-        //        throw new System.Exception(this.GetType().ToString() + " Inject UIManager failed!");
+        //        throw new System.Exception(this.GetType().ToString() + " Inject uiManager failed!");
         //}
     }
 }
