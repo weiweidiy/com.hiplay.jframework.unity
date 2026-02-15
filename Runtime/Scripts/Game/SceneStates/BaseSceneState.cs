@@ -14,7 +14,7 @@ namespace JFramework.Unity
     /// 默认的场景状态基类，提供了切换场景、初始化UI管理器、播放BGM等功能，子类只需要实现具体的场景类型、UI设置、BGM等信息即可
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
-    public abstract class BaseSceneState<TContext,TSceneType> : BaseStateAsync<TContext> where TContext : GameContext
+    public abstract class BaseSceneState<TSceneType> : BaseStateAsync
     {
         //[Inject]
         //protected IAssetsLoader assetsLoader;

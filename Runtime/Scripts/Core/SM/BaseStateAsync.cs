@@ -6,12 +6,12 @@ namespace JFramework.Unity
     /// 
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
-    public abstract class BaseStateAsync<TContext> where TContext : GameContext
+    public abstract class BaseStateAsync
     {
         /// <summary>
         /// 上下文
         /// </summary>
-        protected TContext context;
+        protected GameContext context;
 
         /// <summary>
         /// 状态机名字
@@ -23,7 +23,7 @@ namespace JFramework.Unity
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public virtual UniTask OnEnter(TContext context, object arg)
+        public virtual UniTask OnEnter(GameContext context, object arg)
         {
             this.context = context;
             AddListeners();      
