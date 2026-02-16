@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace JFramework.Unity
 {
@@ -7,7 +8,7 @@ namespace JFramework.Unity
     /// </summary>
     public interface ISceneStateMachineAsync 
     {
-        Task SwitchToState(string stateName, GameContext context);
+        UniTask SwitchToState(string stateName, GameContext context);
     }
 
 

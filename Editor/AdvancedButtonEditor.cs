@@ -1,7 +1,6 @@
+using JFramework.Unity;
 using UnityEditor;
 using UnityEditor.UI;
-using UnityEngine;
-using Game.Common;
 
 [CustomEditor(typeof(AdvancedButton))]
 public class AdvancedButtonEditor : ButtonEditor

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -77,10 +78,12 @@ namespace JFramework.Unity
 
         public IViewControllerManager GetViewControllerContainer() => viewControllerContainer;
 
+        public ISceneStateMachineAsync GetSceneStateMachine() => sm;
+
         #endregion
 
         #region 场景状态机接口
-        public Task SwitchToState(string stateName, GameContext context)
+        public UniTask SwitchToState(string stateName, GameContext context)
         {
             return sm.SwitchToState(stateName, context);
         }
@@ -181,6 +184,8 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
+
+
         #endregion
     }
 }

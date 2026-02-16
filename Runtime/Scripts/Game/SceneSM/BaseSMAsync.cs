@@ -132,10 +132,10 @@ namespace JFramework.Unity
         /// 切换状态
         /// </summary>
         /// <param name="stateName"></param>
-        public virtual Task SwitchToState(string stateName, GameContext context)
+        public virtual UniTask SwitchToState(string stateName, GameContext context)
         {
             this.context = context;
-            return Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
 

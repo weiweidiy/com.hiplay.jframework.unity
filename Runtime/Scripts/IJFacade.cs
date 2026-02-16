@@ -9,5 +9,7 @@
         EventManager GetEventManager();
 
         IViewControllerManager GetViewControllerContainer();
+
+        ISceneStateMachineAsync GetSceneStateMachine();
     }
 }

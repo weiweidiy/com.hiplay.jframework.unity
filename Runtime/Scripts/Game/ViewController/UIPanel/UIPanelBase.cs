@@ -7,47 +7,38 @@ using UnityEngine;
 
 namespace JFramework.Unity
 {
-
     /// <summary>
-    /// UI面板基类，带有关闭按钮,并且会发送面板显示事件
+    /// UI面板基类，并且会发送面板显示事件
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public abstract class UIPanelBase<T> :  APanelController<T> where T : IPanelProperties
     {
-        /// <summary>
-        /// 关闭按钮
-        /// </summary>
-        [SerializeField] protected AdvancedButton btnClose;
-
-        /// <summary>
-        /// panel数据基类
-        /// </summary>
-        public abstract class UIPanelBaseData
-        {
-            public UIPanelBase<T> panel;
-        }
+        public event Action<UIPanelBase<T>> onPanelEnable;
+        public event Action<UIPanelBase<T>> onPanelShow;
+        public event Action<UIPanelBase<T>> onPanelHide;
+        public event Action<UIPanelBase<T>> onPanelRefresh;
 
         /// <summary>
         /// 显示面板时调用，在Refresh之前调用
         /// </summary>
-        protected virtual void OnPanelEnable() { }
-
-        /// <summary>
-        /// 面板被隐藏时调用
-        /// </summary>
-        protected virtual void OnPanelHide() { }
+        protected virtual void OnPanelEnable() { onPanelEnable?.Invoke(this); }
 
         /// <summary>
         /// 刷新面板数据
         /// </summary>
         /// <param name="properties"></param>
-        protected abstract void OnPanelRefresh(T properties);
+        protected virtual void OnPanelRefresh(T properties) { onPanelRefresh?.Invoke(this); }
 
         /// <summary>
-        /// 创建一个PanelData对象
+        /// 面板显示完成，在Refresh之后调用
         /// </summary>
-        /// <returns></returns>
-        protected abstract UIPanelBaseData CreatePanelData();
+        protected virtual void OnPanelShow() { onPanelShow?.Invoke(this); }
+
+        /// <summary>
+        /// 面板被隐藏时调用
+        /// </summary>
+        protected virtual void OnPanelHide() { onPanelHide?.Invoke(this); }
+
 
         /// <summary>
         /// 面板属性被设置
@@ -55,11 +46,6 @@ namespace JFramework.Unity
         protected override async void OnPropertiesSet()
         {
             base.OnPropertiesSet();
-            if (btnClose != null)
-            {
-                btnClose.onClick.RemoveAllListeners();
-                btnClose.onClick.AddListener(OnBtnClosed);
-            }
 
             OnPanelEnable();
 
@@ -76,49 +62,45 @@ namespace JFramework.Unity
         protected override void WhileHiding()
         {
             base.WhileHiding();
-            if (btnClose != null)
-            {
-                btnClose.onClick.RemoveAllListeners();
-            }
 
             OnPanelHide();
         }
 
-        /// <summary>
-        /// 发送面板显示事件,在Refresh之后调用
-        /// </summary>
-        protected virtual void OnPanelShow()
-        {
-            //SendEvent<UIPanelEventShowed>(CreatePanelData());
-        }
+        ///// <summary>
+        ///// 发送面板显示事件,在Refresh之后调用
+        ///// </summary>
+        //protected virtual void OnPanelShow()
+        //{
+        //    //SendEvent<UIPanelEventShowed>(CreatePanelData());
+        //}
 
-        /// <summary>
-        /// 关闭按钮被点击
-        /// </summary>
-        /// <exception cref="NotImplementedException"></exception>
-        private void OnBtnClosed()
-        {
-            //SendEvent<UIPanelEventCloseBtnClicked>(CreatePanelData());
-        }
+        ///// <summary>
+        ///// 关闭按钮被点击
+        ///// </summary>
+        ///// <exception cref="NotImplementedException"></exception>
+        //private void OnBtnClosed()
+        //{
+        //    //SendEvent<UIPanelEventCloseBtnClicked>(CreatePanelData());
+        //}
 
-        protected EventManager eventManager;
-        protected override void Awake()
-        {
-            base.Awake();
+        ////protected EventManager eventManager;
+        ////protected override void Awake()
+        ////{
+        ////    base.Awake();
 
-            //this.Inject();
-        }
+        ////    //this.Inject();
+        ////}
 
     
-        public void Initialize(EventManager eventManager)
-        {
-            this.eventManager = eventManager;
-        }
+        ////public void Initialize(EventManager eventManager)
+        ////{
+        ////    this.eventManager = eventManager;
+        ////}
 
-        protected void SendEvent<TEvent>(object arg) where TEvent : Event, new()
-        {
-            eventManager.Raise<TEvent>(arg);
-        }
+        ////protected void SendEvent<TEvent>(object arg) where TEvent : Event, new()
+        ////{
+        ////    eventManager.Raise<TEvent>(arg);
+        ////}
 
 
     }

@@ -1,10 +1,9 @@
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using System;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-namespace Game.Common
+namespace JFramework.Unity
 {
     public class AdvancedButton : Button, IClickHandler
     {

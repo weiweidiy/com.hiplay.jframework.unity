@@ -1,6 +1,6 @@
 using System;
 
-namespace Game.Common
+namespace JFramework.Unity
 {
     public interface IClickHandler
     {
