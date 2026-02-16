@@ -1,11 +1,12 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace JFramework.Unity
 {
-    public class JFacade : IJUIManager, IJNetworkable, ISceneStateMachineAsync, IJFacade
+    public class JFacade : IJUIManager, IJNetworkable, ISceneStateMachineAsync, IJFacade, IGameObjectManager
     {
         /// <summary>
         /// UI管理器
@@ -46,10 +47,16 @@ namespace JFramework.Unity
         /// 视图控制器容器
         /// </summary>
         IViewControllerManager viewControllerContainer;
- 
+
+        /// <summary>
+        /// 游戏对象管理器
+        /// </summary>
+        IGameObjectManager gameObjectManager;
+
 
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
-            , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IViewControllerManager viewControllerContainer)
+            , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IViewControllerManager viewControllerContainer
+            ,IGameObjectManager gameObjectManager)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -60,6 +67,7 @@ namespace JFramework.Unity
             this.context = context;
             context.Facade = this;
             this.viewControllerContainer = viewControllerContainer;
+            this.gameObjectManager = gameObjectManager;
         }
 
         public async Task Run()
@@ -86,6 +94,28 @@ namespace JFramework.Unity
         public UniTask SwitchToState(string stateName, GameContext context)
         {
             return sm.SwitchToState(stateName, context);
+        }
+        #endregion
+
+        #region 游戏对象管理器接口
+        public UniTask Initialize(List<string> prefabsList)
+        {
+            return gameObjectManager.Initialize(prefabsList);
+        }
+
+        public GameObject Rent(string name, Transform parent)
+        {
+            return gameObjectManager.Rent(name, parent);
+        }
+
+        public void Return(GameObject go)
+        {
+            gameObjectManager.Return(go);
+        }
+
+        public UniTask<GameObject> InstantiateAsync(string location, Transform parent)
+        {
+            return gameObjectManager.InstantiateAsync(location, parent);
         }
         #endregion
 
@@ -184,7 +214,6 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
-
 
         #endregion
     }

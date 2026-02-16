@@ -18,6 +18,10 @@
 
         IViewControllerManager viewControllerContainer;
 
+        IGameObjectPool gameObjectPool;
+
+        IGameObjectManager gameObjectManager;
+
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -50,13 +54,24 @@
                 throw new System.Exception("FirstSceneState is required but not set in FacadeBuilder!");
             }
 
-            if(viewControllerContainer == null)
+            if (viewControllerContainer == null)
             {
                 throw new System.Exception("ViewControllerContainer is required but not set in FacadeBuilder!");
             }
 
-            var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context, viewControllerContainer);
-    
+            if (gameObjectPool == null)
+            {
+                gameObjectPool = new DefaultGameObjectPool(assetsLoader);
+            }
+
+            if(gameObjectManager == null)
+            {
+                gameObjectManager = new DefaultGameObjectManager(gameObjectPool, assetsLoader);
+            }
+
+            var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context, viewControllerContainer
+                    , gameObjectManager);
+
             return facade;
         }
 
@@ -105,6 +120,18 @@
         public FacadeBuilder SetViewControllerContainer(IViewControllerManager viewControllerContainer)
         {
             this.viewControllerContainer = viewControllerContainer;
+            return this;
+        }
+
+        public FacadeBuilder SetGameObjectPool(IGameObjectPool gameObjectPool)
+        {
+            this.gameObjectPool = gameObjectPool;
+            return this;
+        }
+
+        public FacadeBuilder SetGameObjectManager(IGameObjectManager gameObjectManager)
+        {
+            this.gameObjectManager = gameObjectManager;
             return this;
         }
     }
