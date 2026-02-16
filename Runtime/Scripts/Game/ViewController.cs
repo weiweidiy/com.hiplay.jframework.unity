@@ -1,57 +1,48 @@
-﻿
-using JFramework;
-using System;
+﻿using UnityEngine;
 
 ///游戏可以服用
 namespace JFramework.Unity
 {
-    public abstract class ViewController
+    public class ViewControllerBaseOpenArgs
     {
-        public class Open : Event { }
-        public class Refresh : Event { }
-        public class Close : Event { }
+        //通用参数
+        public string prefabName; //面板名字
+    }
 
-        public class ControllerBaseArgs
-        {
-            //通用参数
-            public string panelName; //面板名字
-        }
+    /// <summary>
+    /// 视图控制器：负责处理视图事件，更新UI状态，和场景状态机解耦，允许在不同的场景状态中复用同一个视图控制器
+    /// </summary>
+    public abstract class ViewController 
+    {
+        public string Name => this.GetType().Name;
 
-        protected EventManager eventManager;
-
-
-        protected void SendEvent<T>(object arg) where T : Event, new()
-        {
-            eventManager.Raise<T>(arg);
-        }
-
-        public ViewController(EventManager eventManager) 
-        {
-            this.eventManager = eventManager;
-        }
+        GameContext context;
 
         /// <summary>
         /// 在state onenter中被调用，注册事件监听
         /// </summary>
-        public virtual void OnStart()
+        public virtual void Start(GameContext context)
         {
-            eventManager.AddListener<Open>(DoOpen);
-            eventManager.AddListener<Close>(DoClose);
-            eventManager.AddListener<Refresh>(DoRefresh);
+            this.context = context;
+            Debug.Log("ViewController Start " + this.GetType());
         }
 
-        public virtual void OnStop()
+        public virtual void Stop()
         {
-            eventManager.RemoveListener<Open>(DoOpen);
-            eventManager.RemoveListener<Close>(DoClose);
-            eventManager.RemoveListener<Refresh>(DoRefresh);
+            this.context = null;
         }
 
+        /// <summary>
+        /// 打开视图
+        /// </summary>
+        /// <typeparam name="TArg"></typeparam>
+        /// <param name="args"></param>
+        public abstract void Open<TArg>(TArg args) where TArg : ViewControllerBaseOpenArgs;
 
-        protected abstract void DoOpen(Open e);
+        public abstract void Close();
 
-        protected virtual void DoClose(Close e) { }
+        public abstract void Refresh<TArg>(TArg args) where TArg : ViewControllerBaseOpenArgs;
 
-        protected virtual void DoRefresh(Refresh e) { }
+        //EventManager GetEventManager() => context.Facade.GetEventManager();
     }
 }

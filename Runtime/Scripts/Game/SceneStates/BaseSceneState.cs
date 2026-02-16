@@ -34,19 +34,12 @@ namespace JFramework.Unity
         //[Inject]
         //protected EventManager eventManager;
         //[Inject]
-        //protected List<ViewController> viewControllers;
+        protected List<ViewController> viewControllers = new List<ViewController>();
         /// <summary>
         /// 状态参数
         /// </summary>
         protected object arg;
-
-        
-        //public BaseSceneState(IAssetsLoader assetsLoader)
-        //{
-        //    this.assetsLoader = assetsLoader;
-        //    //this.uiManager = uiManager;
-        //    //this.eventManager = eventManager;
-        //}
+  
 
         protected override async UniTask OnEnter(object arg)
         {
@@ -74,7 +67,7 @@ namespace JFramework.Unity
             await GetUIManager().Initialize(GetUISettingsName());
 
             // 启动所有的ViewController
-            //StartAllVeiwControllers();
+            StartAllVeiwControllers();
 
             //播放场景BGM
             await PlayBGM();
@@ -83,9 +76,9 @@ namespace JFramework.Unity
         public override async UniTask OnExit()
         {
             Debug.Log("OnExit " + this.GetType());
-            //await base.OnExit();
+
             // 清理ViewController
-            //viewControllers.Clear();
+            StopAllViewControllers();
 
             // 卸载当前场景
             AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(GetSceneType().ToString());
@@ -98,33 +91,34 @@ namespace JFramework.Unity
             await base.OnExit();
         }
 
-        ///// <summary>
-        ///// 初始化场景所有的ViewController
-        ///// </summary>
-        //protected virtual void StartAllVeiwControllers()
-        //{
-        //    // 启动所有的ViewController
-        //    foreach (var controller in GetControllers())
-        //    {
-        //        viewControllers.Add(controller);
-        //    }
-
-        //    OnInitializeVeiwControllers(viewControllers);
-
-        //    foreach(var controller in viewControllers)
-        //    {
-        //        controller.OnStart();
-        //    }
-
-        //    //Debug.Log(GetSceneType().ToString() + " StartAllVeiwControllers done : " + viewControllers.Count());
-        //}
-
         /// <summary>
-        /// 提供给子类重写，添加额外的ViewController
+        /// 初始化场景所有的ViewController
         /// </summary>
-        /// <param name="viewControllers"></param>
-        //protected virtual void OnInitializeVeiwControllers(List<ViewController> viewControllers) { }
+        protected  void StartAllVeiwControllers()
+        {
+            // 启动所有的ViewController
+            var controllers = GetControllers();
+            if(controllers == null || controllers.Length == 0)
+            {
+                Debug.LogWarning("当前场景没有ViewController " + GetSceneType().ToString());
+                return;
+            }
 
+            foreach (var controller in controllers)
+            {
+                viewControllers.Add(controller);
+                controller.Start(context);
+            }
+        }
+
+        protected void StopAllViewControllers()
+        {
+            foreach (var controller in viewControllers)
+            {
+                controller.Stop();
+            }
+            viewControllers.Clear();
+        }
 
 
         /// <summary>
@@ -149,7 +143,7 @@ namespace JFramework.Unity
         }
 
 
-        //protected abstract ViewController[] GetControllers();
+        protected abstract ViewController[] GetControllers();
 
         protected abstract TSceneType GetSceneType();
 

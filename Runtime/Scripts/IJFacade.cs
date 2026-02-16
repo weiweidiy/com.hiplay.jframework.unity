@@ -5,5 +5,9 @@
         IAssetsLoader GetAssetsLoader();
 
         IJUIManager GetUIManager();
+
+        EventManager GetEventManager();
+
+        IViewControllerContainer GetViewControllerContainer();
     }
 }

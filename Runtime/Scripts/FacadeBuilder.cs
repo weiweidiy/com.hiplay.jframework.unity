@@ -16,6 +16,8 @@
 
         GameContext context;
 
+        IViewControllerContainer viewControllerContainer;
+
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -48,10 +50,13 @@
                 throw new System.Exception("FirstSceneState is required but not set in FacadeBuilder!");
             }
 
-            var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState);
-            context.Facade = facade;
-            sm.SetContext(context);
+            if(viewControllerContainer == null)
+            {
+                throw new System.Exception("ViewControllerContainer is required but not set in FacadeBuilder!");
+            }
 
+            var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context, viewControllerContainer);
+    
             return facade;
         }
 
@@ -94,6 +99,12 @@
         public FacadeBuilder SetGameContext(GameContext context)
         {
             this.context = context;
+            return this;
+        }
+
+        public FacadeBuilder SetViewControllerContainer(IViewControllerContainer viewControllerContainer)
+        {
+            this.viewControllerContainer = viewControllerContainer;
             return this;
         }
     }

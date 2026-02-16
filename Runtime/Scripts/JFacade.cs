@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace JFramework.Unity
 {
-    public class JFacade : IJUIManager, IJNetworkable, ISceneSwitchAble, IJFacade
+    public class JFacade : IJUIManager, IJNetworkable, ISceneStateMachineAsync, IJFacade
     {
         /// <summary>
         /// UI管理器
         /// </summary>
-        public IJUIManager uiManager;
+        IJUIManager uiManager;
 
         /// <summary>
         /// 网络管理器
@@ -19,12 +19,12 @@ namespace JFramework.Unity
         /// <summary>
         /// 资源加载器
         /// </summary>
-        public IAssetsLoader assetsLoader;
+        IAssetsLoader assetsLoader;
 
         /// <summary>
         /// 消息事件管理器
         /// </summary>
-        public EventManager eventManager;
+        EventManager eventManager;
 
         /// <summary>
         /// 场景状态机
@@ -36,8 +36,19 @@ namespace JFramework.Unity
         /// </summary>
         string firstSceneState;
 
+        /// <summary>
+        /// 游戏上下文
+        /// </summary>
+        GameContext context;
+
+        /// <summary>
+        /// 视图控制器容器
+        /// </summary>
+        IViewControllerContainer viewControllerContainer;
+ 
+
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
-            , ISceneStateMachineAsync sm, string firstSceneState)
+            , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IViewControllerContainer viewControllerContainer)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -45,29 +56,33 @@ namespace JFramework.Unity
             this.eventManager = eventManager;
             this.sm = sm;
             this.firstSceneState = firstSceneState;
+            this.context = context;
+            context.Facade = this;
+            this.viewControllerContainer = viewControllerContainer;
         }
 
-        public void Run()
+        public async Task Run()
         {
-            SwitchToState(firstSceneState);
+            this.viewControllerContainer.RegisterViewControllers();
+
+            await SwitchToState(firstSceneState, context);
         }
 
         #region Facade接口
-        public IAssetsLoader GetAssetsLoader()
-        {
-            return assetsLoader;
-        }
+        public IAssetsLoader GetAssetsLoader() => assetsLoader;
 
-        public IJUIManager GetUIManager()
-        {
-            return uiManager;
-        }
+        public IJUIManager GetUIManager() => uiManager;
+
+        public EventManager GetEventManager() => eventManager;
+
+        public IViewControllerContainer GetViewControllerContainer() => viewControllerContainer;
+
         #endregion
 
         #region 场景状态机接口
-        public Task SwitchToState(string stateName)
+        public Task SwitchToState(string stateName, GameContext context)
         {
-            return sm.SwitchToState(stateName);
+            return sm.SwitchToState(stateName, context);
         }
         #endregion
 
@@ -129,7 +144,7 @@ namespace JFramework.Unity
         #region 网络接口
         public bool IsConnecting()
         {
-            if(networkManager == null)
+            if (networkManager == null)
             {
                 Debug.LogError("[JFacade] Network manager is not set!");
                 return false;
@@ -139,7 +154,7 @@ namespace JFramework.Unity
 
         Task<TResponse> IJNetworkable.SendMessage<TResponse>(IJNetMessage pMsg, TimeSpan? timeout)
         {
-            if(networkManager == null)
+            if (networkManager == null)
             {
                 Debug.LogError("[JFacade] Network manager is not set!");
                 return Task.FromResult(default(TResponse));
@@ -149,7 +164,8 @@ namespace JFramework.Unity
 
         public Task Connect(string url, string token = null)
         {
-            if(networkManager == null) {
+            if (networkManager == null)
+            {
                 Debug.LogError("[JFacade] Network manager is not set!");
                 return Task.CompletedTask;
             }
@@ -165,13 +181,6 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
-
-
-
-
-
-
-
         #endregion
     }
 }

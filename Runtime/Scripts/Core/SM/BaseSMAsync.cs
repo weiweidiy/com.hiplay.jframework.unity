@@ -60,11 +60,11 @@ namespace JFramework.Unity
             if (states == null || states.Count == 0)
                 throw new Exception("状态机状态列表为空 " + GetType().ToString());
 
-            Debug.Log("before StateMachine create ");
+            //Debug.Log("before StateMachine create ");
 
             machine = new StateMachine<TState, TTrigger>(states[0]);
 
-            Debug.Log("StateMachine success " + machine.ToString());
+            //Debug.Log("StateMachine success " + machine.ToString());
 
             //获取所有状态配置
             var configs = GetConfigs();
@@ -132,13 +132,13 @@ namespace JFramework.Unity
         /// 切换状态
         /// </summary>
         /// <param name="stateName"></param>
-        public abstract Task SwitchToState(string stateName);
+        public virtual Task SwitchToState(string stateName, GameContext context)
+        {
+            this.context = context;
+            return Task.CompletedTask;
+        }
 
-        /// <summary>
-        /// 设置游戏上下文，状态机和状态都可以通过上下文获取游戏的各种服务
-        /// </summary>
-        /// <param name="context"></param>
-        public void SetContext(GameContext context) => this.context = context;
+
 
     }
 }
