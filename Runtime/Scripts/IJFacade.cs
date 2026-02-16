@@ -8,6 +8,6 @@
 
         EventManager GetEventManager();
 
-        IViewControllerContainer GetViewControllerContainer();
+        IViewControllerManager GetViewControllerContainer();
     }
 }

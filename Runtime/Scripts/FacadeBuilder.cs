@@ -16,7 +16,7 @@
 
         GameContext context;
 
-        IViewControllerContainer viewControllerContainer;
+        IViewControllerManager viewControllerContainer;
 
         public JFacade Build()
         {
@@ -102,7 +102,7 @@
             return this;
         }
 
-        public FacadeBuilder SetViewControllerContainer(IViewControllerContainer viewControllerContainer)
+        public FacadeBuilder SetViewControllerContainer(IViewControllerManager viewControllerContainer)
         {
             this.viewControllerContainer = viewControllerContainer;
             return this;

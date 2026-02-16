@@ -44,11 +44,11 @@ namespace JFramework.Unity
         /// <summary>
         /// 视图控制器容器
         /// </summary>
-        IViewControllerContainer viewControllerContainer;
+        IViewControllerManager viewControllerContainer;
  
 
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
-            , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IViewControllerContainer viewControllerContainer)
+            , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IViewControllerManager viewControllerContainer)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -75,7 +75,7 @@ namespace JFramework.Unity
 
         public EventManager GetEventManager() => eventManager;
 
-        public IViewControllerContainer GetViewControllerContainer() => viewControllerContainer;
+        public IViewControllerManager GetViewControllerContainer() => viewControllerContainer;
 
         #endregion
 

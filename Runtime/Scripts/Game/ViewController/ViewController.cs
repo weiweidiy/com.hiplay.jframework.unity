@@ -3,11 +3,6 @@
 ///游戏可以服用
 namespace JFramework.Unity
 {
-    public class ViewControllerBaseOpenArgs
-    {
-        //通用参数
-        public string prefabName; //面板名字
-    }
 
     /// <summary>
     /// 视图控制器：负责处理视图事件，更新UI状态，和场景状态机解耦，允许在不同的场景状态中复用同一个视图控制器
@@ -37,11 +32,11 @@ namespace JFramework.Unity
         /// </summary>
         /// <typeparam name="TArg"></typeparam>
         /// <param name="args"></param>
-        public abstract void Open<TArg>(TArg args) where TArg : ViewControllerBaseOpenArgs;
+        public abstract void Open<TArg>(TArg args) where TArg : ViewControllerBaseData;
 
         public abstract void Close();
 
-        public abstract void Refresh<TArg>(TArg args) where TArg : ViewControllerBaseOpenArgs;
+        public abstract void Refresh<TArg>(TArg args) where TArg : ViewControllerBaseData;
 
         //EventManager GetEventManager() => context.Facade.GetEventManager();
     }
