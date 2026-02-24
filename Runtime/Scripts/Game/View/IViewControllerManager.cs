@@ -4,8 +4,8 @@
     {
         void RegisterViewControllers();
 
-        ViewController[] GetViewControllers(string group);
+        View[] GetViewControllers(string group);
 
-        ViewController GetViewController(string name);
+        View GetViewController(string name);
     }
 }

@@ -34,7 +34,7 @@ namespace JFramework.Unity
         //[Inject]
         //protected EventManager eventManager;
         //[Inject]
-        protected List<ViewController> viewControllers = new List<ViewController>();
+        protected List<View> viewControllers = new List<View>();
         /// <summary>
         /// 状态参数
         /// </summary>
@@ -143,7 +143,7 @@ namespace JFramework.Unity
         }
 
 
-        protected abstract ViewController[] GetControllers();
+        protected abstract View[] GetControllers();
 
         protected abstract TSceneType GetSceneType();
 

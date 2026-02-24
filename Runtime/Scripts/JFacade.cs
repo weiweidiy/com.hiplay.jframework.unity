@@ -46,7 +46,17 @@ namespace JFramework.Unity
         /// <summary>
         /// 视图控制器容器
         /// </summary>
-        IViewControllerManager viewControllerContainer;
+        IViewControllerManager viewControllerManager;
+
+        /// <summary>
+        /// 模型容器，负责管理游戏中的数据模型，提供数据访问和更新的接口，和场景状态机解耦，允许在不同的场景状态中复用同一个模型容器
+        /// </summary>
+        IModelManager modelManager;
+
+        /// <summary>
+        /// 控制器管理器
+        /// </summary>
+        IControllerManager controllerManager;
 
         /// <summary>
         /// 游戏对象管理器
@@ -55,8 +65,8 @@ namespace JFramework.Unity
 
 
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
-            , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IViewControllerManager viewControllerContainer
-            ,IGameObjectManager gameObjectManager)
+            , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
+            , IModelManager modelManager, IViewControllerManager viewControllerContainer, IControllerManager controllerManager)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -66,13 +76,22 @@ namespace JFramework.Unity
             this.firstSceneState = firstSceneState;
             this.context = context;
             context.Facade = this;
-            this.viewControllerContainer = viewControllerContainer;
             this.gameObjectManager = gameObjectManager;
+            this.viewControllerManager = viewControllerContainer;
+            this.modelManager = modelManager;
+            this.controllerManager = controllerManager;
+
         }
 
+        /// <summary>
+        /// 运行游戏
+        /// </summary>
+        /// <returns></returns>
         public async Task Run()
         {
-            this.viewControllerContainer.RegisterViewControllers();
+            this.modelManager.RegisterModels();
+            this.viewControllerManager.RegisterViewControllers();
+            this.controllerManager.RegisterControllers();
 
             await SwitchToState(firstSceneState, context);
         }
@@ -84,7 +103,11 @@ namespace JFramework.Unity
 
         public EventManager GetEventManager() => eventManager;
 
-        public IViewControllerManager GetViewControllerContainer() => viewControllerContainer;
+        public IViewControllerManager GetViewControllerContainer() => viewControllerManager;
+
+        public IModelManager GetModelManager()=> modelManager;
+
+        public IControllerManager GetControllerManager()=> controllerManager;
 
         public ISceneStateMachineAsync GetSceneStateMachine() => sm;
 
@@ -214,6 +237,8 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
+
+
 
         #endregion
     }

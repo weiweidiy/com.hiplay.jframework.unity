@@ -16,7 +16,11 @@
 
         GameContext context;
 
-        IViewControllerManager viewControllerContainer;
+        IViewControllerManager viewControllerManager;
+
+        IModelManager modelManager;
+
+        IControllerManager controllerManager;
 
         IGameObjectPool gameObjectPool;
 
@@ -54,9 +58,19 @@
                 throw new System.Exception("FirstSceneState is required but not set in FacadeBuilder!");
             }
 
-            if (viewControllerContainer == null)
+            if (viewControllerManager == null)
             {
                 throw new System.Exception("ViewControllerContainer is required but not set in FacadeBuilder!");
+            }
+
+            if(modelManager == null)
+            {
+                throw new System.Exception("ModelManager is required but not set in FacadeBuilder!");
+            }
+
+            if(controllerManager == null)
+            {
+                throw new System.Exception("ControllerManager is required but not set in FacadeBuilder!");
             }
 
             if (gameObjectPool == null)
@@ -69,8 +83,8 @@
                 gameObjectManager = new DefaultGameObjectManager(gameObjectPool, assetsLoader);
             }
 
-            var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context, viewControllerContainer
-                    , gameObjectManager);
+            var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
+                    , gameObjectManager,modelManager, viewControllerManager, controllerManager);
 
             return facade;
         }
@@ -119,7 +133,19 @@
 
         public FacadeBuilder SetViewControllerContainer(IViewControllerManager viewControllerContainer)
         {
-            this.viewControllerContainer = viewControllerContainer;
+            this.viewControllerManager = viewControllerContainer;
+            return this;
+        }
+
+        public FacadeBuilder SetModelManager(IModelManager modelManager)
+        {
+            this.modelManager = modelManager;
+            return this;
+        }
+
+        public FacadeBuilder SetControllerManager(IControllerManager controllerManager)
+        {
+            this.controllerManager = controllerManager;
             return this;
         }
 

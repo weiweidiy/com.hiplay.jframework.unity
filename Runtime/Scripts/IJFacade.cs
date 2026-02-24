@@ -10,6 +10,10 @@
 
         IViewControllerManager GetViewControllerContainer();
 
+        IModelManager GetModelManager();
+
+        IControllerManager GetControllerManager();
+
         ISceneStateMachineAsync GetSceneStateMachine();
     }
 }

@@ -3,13 +3,12 @@
 ///游戏可以服用
 namespace JFramework.Unity
 {
-
     /// <summary>
     /// 视图控制器：负责处理视图事件，更新UI状态，和场景状态机解耦，允许在不同的场景状态中复用同一个视图控制器
     /// 负责视图上的一些逻辑处理，比如UI事件监听，UI状态更新等，和场景状态机解耦，允许在不同的场景状态中复用同一个视图控制器
     /// 如果是业务上的逻辑，则应该放在场景状态机中，如果是UI上的逻辑，则应该放在视图控制器中
     /// </summary>
-    public abstract class ViewController 
+    public abstract class View 
     {
         public string Name => this.GetType().Name;
 
@@ -21,7 +20,7 @@ namespace JFramework.Unity
         public virtual void Start(GameContext context)
         {
             this.context = context;
-            //Debug.Log("ViewController Start " + this.GetType());
+            //Debug.Log("View Start " + this.GetType());
         }
 
         public virtual void Stop()
