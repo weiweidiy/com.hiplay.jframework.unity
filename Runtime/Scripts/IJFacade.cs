@@ -15,5 +15,7 @@
         IControllerManager GetControllerManager();
 
         ISceneStateMachineAsync GetSceneStateMachine();
+
+        IHttpRequest GetHttpRequest();
     }
 }

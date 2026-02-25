@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Game.Common
+namespace JFramework.Unity
 {
     public class CustomCertificateHandler : CertificateHandler
     {
@@ -40,12 +40,12 @@ namespace Game.Common
         private Dictionary<string, string> headers = new Dictionary<string, string>();
         private string contentType = "application/json";
         CustomCertificateHandler customCertificateHandler;
-        ISerializer serializer;
-        IDeserializer deserializer;
+        IDataConverter dataConverter;
 
-        public DefaultHttpRequest(ISerializer serializer, IDeserializer deserializer, CustomCertificateHandler customCertificateHandler = null)
+        public DefaultHttpRequest(IDataConverter dataConverter, CustomCertificateHandler customCertificateHandler = null)
         {
             this.customCertificateHandler = customCertificateHandler;
+            this.dataConverter = dataConverter;
         }
         public void AddHeader(string name, string value)
         {
@@ -207,7 +207,7 @@ namespace Game.Common
                 try
                 {
                     // 用你自己的反序列化工具
-                    var errorObj = deserializer.ToObject<ErrorMessage>(errorJson);
+                    var errorObj = dataConverter.ToObject<ErrorMessage>(errorJson);
                     message = errorObj?.message;
                 }
                 catch
@@ -228,14 +228,14 @@ namespace Game.Common
             string json = null;
             if (body != null)
             {
-                json = serializer.Serialize(body);
+                json = dataConverter.Serialize(body);
             }
 
             runable?.Start(null);
             var result = await PostAsync(url, json, encoding);
             runable?.Stop();
             var response = encoding.GetString(result);
-            TResp responseObject = deserializer.ToObject<TResp>(response);
+            TResp responseObject = dataConverter.ToObject<TResp>(response);
             return responseObject;
         }
     }

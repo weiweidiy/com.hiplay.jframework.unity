@@ -26,6 +26,9 @@
 
         IGameObjectManager gameObjectManager;
 
+        IHttpRequest httpRequest;
+
+        IDataConverter dataConverter;
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -73,6 +76,16 @@
                 throw new System.Exception("ControllerManager is required but not set in FacadeBuilder!");
             }
 
+            if(dataConverter == null)
+            {
+                dataConverter = new DefaultDataConverter();
+            }
+
+            if (httpRequest == null)
+            {
+                httpRequest = new DefaultHttpRequest(dataConverter, new CustomCertificateHandler());
+            }
+
             if (gameObjectPool == null)
             {
                 gameObjectPool = new DefaultGameObjectPool(assetsLoader);
@@ -84,7 +97,7 @@
             }
 
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
-                    , gameObjectManager,modelManager, viewControllerManager, controllerManager);
+                    , gameObjectManager,modelManager, viewControllerManager, controllerManager,httpRequest);
 
             return facade;
         }
@@ -158,6 +171,18 @@
         public FacadeBuilder SetGameObjectManager(IGameObjectManager gameObjectManager)
         {
             this.gameObjectManager = gameObjectManager;
+            return this;
+        }
+
+        public FacadeBuilder SetHttpRequest(IHttpRequest httpRequest)
+        {
+            this.httpRequest = httpRequest;
+            return this;
+        }
+
+        public FacadeBuilder SetDataConverter(IDataConverter dataConverter)
+        {
+            this.dataConverter = dataConverter;
             return this;
         }
     }

@@ -63,10 +63,16 @@ namespace JFramework.Unity
         /// </summary>
         IGameObjectManager gameObjectManager;
 
+        /// <summary>
+        /// http请求接口，提供发送http请求的功能，允许在游戏中方便地进行网络通信，获取服务器数据等操作
+        /// </summary>
+        IHttpRequest httpRequest;
+
 
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
             , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
-            , IModelManager modelManager, IViewControllerManager viewControllerContainer, IControllerManager controllerManager)
+            , IModelManager modelManager, IViewControllerManager viewControllerContainer, IControllerManager controllerManager
+            , IHttpRequest httpRequest)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -80,6 +86,7 @@ namespace JFramework.Unity
             this.viewControllerManager = viewControllerContainer;
             this.modelManager = modelManager;
             this.controllerManager = controllerManager;
+            this.httpRequest = httpRequest;
 
         }
 
@@ -110,6 +117,9 @@ namespace JFramework.Unity
         public IControllerManager GetControllerManager()=> controllerManager;
 
         public ISceneStateMachineAsync GetSceneStateMachine() => sm;
+
+        public IHttpRequest GetHttpRequest()=> httpRequest;
+
 
         #endregion
 
@@ -237,6 +247,7 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
+
 
 
 
