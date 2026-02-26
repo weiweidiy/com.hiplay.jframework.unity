@@ -143,7 +143,10 @@ namespace JFramework.Unity
         }
 
 
-        protected abstract View[] GetControllers();
+        protected View[] GetControllers()
+        {
+            return context.Facade.GetViewControllerContainer().GetViewControllers(GetSceneType().ToString());
+        }
 
         protected abstract TSceneType GetSceneType();
 
