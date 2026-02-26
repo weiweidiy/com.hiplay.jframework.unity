@@ -1,6 +1,6 @@
 ﻿namespace JFramework.Unity
 {
-    public interface IViewControllerManager
+    public interface IViewManager
     {
         void RegisterViewControllers();
 

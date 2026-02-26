@@ -33,14 +33,16 @@ namespace JFramework.Unity
         /// </summary>
         /// <typeparam name="TArg"></typeparam>
         /// <param name="args"></param>
-        public abstract void Open<TArg>(TArg args) where TArg : ViewControllerBaseData;
+        public abstract void Open<TArg>(TArg args) where TArg : ViewData;
 
         public abstract void Close();
 
-        public abstract void Refresh<TArg>(TArg args) where TArg : ViewControllerBaseData;
+        public abstract void Refresh<TArg>(TArg args) where TArg : ViewData;
 
         protected EventManager GetEventManager() => context.Facade.GetEventManager();
 
         protected IJUIManager GetUIManager() => context.Facade.GetUIManager();
+
+        protected IGameObjectManager GetGameObjectManager() => context.Facade.GetGameObjectManager();
     }
 }

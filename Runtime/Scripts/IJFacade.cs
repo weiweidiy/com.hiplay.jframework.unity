@@ -8,7 +8,7 @@
 
         EventManager GetEventManager();
 
-        IViewControllerManager GetViewControllerContainer();
+        IViewManager GetViewControllerContainer();
 
         IModelManager GetModelManager();
 
@@ -17,5 +17,7 @@
         ISceneStateMachineAsync GetSceneStateMachine();
 
         IHttpRequest GetHttpRequest();
+
+        IGameObjectManager GetGameObjectManager();
     }
 }

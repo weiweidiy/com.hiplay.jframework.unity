@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace JFramework.Unity
 {
-    public abstract class BaseViewControllerManager : IViewControllerManager
+    public abstract class BaseViewManager : IViewManager
     {
         protected Dictionary<string, List<View>> viewControllers = new Dictionary<string, List<View>>();
         public abstract void RegisterViewControllers();

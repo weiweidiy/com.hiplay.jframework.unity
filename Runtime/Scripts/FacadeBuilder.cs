@@ -16,7 +16,7 @@
 
         GameContext context;
 
-        IViewControllerManager viewControllerManager;
+        IViewManager viewControllerManager;
 
         IModelManager modelManager;
 
@@ -144,7 +144,7 @@
             return this;
         }
 
-        public FacadeBuilder SetViewControllerContainer(IViewControllerManager viewControllerContainer)
+        public FacadeBuilder SetViewControllerContainer(IViewManager viewControllerContainer)
         {
             this.viewControllerManager = viewControllerContainer;
             return this;

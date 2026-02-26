@@ -46,7 +46,7 @@ namespace JFramework.Unity
         /// <summary>
         /// 视图控制器容器
         /// </summary>
-        IViewControllerManager viewControllerManager;
+        IViewManager viewControllerManager;
 
         /// <summary>
         /// 模型容器，负责管理游戏中的数据模型，提供数据访问和更新的接口，和场景状态机解耦，允许在不同的场景状态中复用同一个模型容器
@@ -71,7 +71,7 @@ namespace JFramework.Unity
 
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
             , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
-            , IModelManager modelManager, IViewControllerManager viewControllerContainer, IControllerManager controllerManager
+            , IModelManager modelManager, IViewManager viewControllerContainer, IControllerManager controllerManager
             , IHttpRequest httpRequest)
         {
             this.networkManager = networkManager;
@@ -110,7 +110,7 @@ namespace JFramework.Unity
 
         public EventManager GetEventManager() => eventManager;
 
-        public IViewControllerManager GetViewControllerContainer() => viewControllerManager;
+        public IViewManager GetViewControllerContainer() => viewControllerManager;
 
         public IModelManager GetModelManager()=> modelManager;
 
@@ -119,6 +119,9 @@ namespace JFramework.Unity
         public ISceneStateMachineAsync GetSceneStateMachine() => sm;
 
         public IHttpRequest GetHttpRequest()=> httpRequest;
+
+        public IGameObjectManager GetGameObjectManager() => gameObjectManager;
+
 
 
         #endregion
@@ -247,6 +250,7 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
+
 
 
 
