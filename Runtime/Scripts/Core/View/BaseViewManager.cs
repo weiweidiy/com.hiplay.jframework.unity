@@ -9,8 +9,10 @@ namespace JFramework.Unity
         public abstract void RegisterViewControllers();
         public View[] GetViewControllers(string group)
         {
-            var ctrollers = viewControllers[group];
+            if (!viewControllers.ContainsKey(group))
+                return null;
 
+            var ctrollers = viewControllers[group];
             return ctrollers == null? null : ctrollers.ToArray();
         }
 

@@ -1,4 +1,6 @@
-﻿namespace JFramework.Unity
+﻿using JFramework.Game;
+
+namespace JFramework.Unity
 {
     public class FacadeBuilder
     {
@@ -29,6 +31,11 @@
         IHttpRequest httpRequest;
 
         IDataConverter dataConverter;
+
+        IJConfigManager configManager;
+
+        IConfigLoader configLoader;
+
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -66,17 +73,17 @@
                 throw new System.Exception("ViewControllerContainer is required but not set in FacadeBuilder!");
             }
 
-            if(modelManager == null)
+            if (modelManager == null)
             {
                 throw new System.Exception("ModelManager is required but not set in FacadeBuilder!");
             }
 
-            if(controllerManager == null)
+            if (controllerManager == null)
             {
                 throw new System.Exception("ControllerManager is required but not set in FacadeBuilder!");
             }
 
-            if(dataConverter == null)
+            if (dataConverter == null)
             {
                 dataConverter = new DefaultDataConverter();
             }
@@ -91,13 +98,23 @@
                 gameObjectPool = new DefaultGameObjectPool(assetsLoader);
             }
 
-            if(gameObjectManager == null)
+            if (gameObjectManager == null)
             {
                 gameObjectManager = new DefaultGameObjectManager(gameObjectPool, assetsLoader);
             }
 
+            if (configLoader == null)
+            {
+                configLoader = new DefaultConfigLoader();
+            }
+
+            if (configManager == null)
+            {
+                configManager = new JConfigManager(configLoader);
+            }
+
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
-                    , gameObjectManager,modelManager, viewControllerManager, controllerManager,httpRequest);
+                    , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager);
 
             return facade;
         }
@@ -183,6 +200,18 @@
         public FacadeBuilder SetDataConverter(IDataConverter dataConverter)
         {
             this.dataConverter = dataConverter;
+            return this;
+        }
+
+        public FacadeBuilder SetConfigManager(IJConfigManager configManager)
+        {
+            this.configManager = configManager;
+            return this;
+        }
+
+        public FacadeBuilder SetConfigLoader(IConfigLoader configLoader)
+        {
+            this.configLoader = configLoader;
             return this;
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using JFramework.Game;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -68,11 +69,16 @@ namespace JFramework.Unity
         /// </summary>
         IHttpRequest httpRequest;
 
+        /// <summary>
+        /// 配置表管理器
+        /// </summary>
+        IJConfigManager configManager;
+
 
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
             , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
             , IModelManager modelManager, IViewManager viewControllerContainer, IControllerManager controllerManager
-            , IHttpRequest httpRequest)
+            , IHttpRequest httpRequest, IJConfigManager configManager)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -87,7 +93,7 @@ namespace JFramework.Unity
             this.modelManager = modelManager;
             this.controllerManager = controllerManager;
             this.httpRequest = httpRequest;
-
+            this.configManager = configManager;
         }
 
         /// <summary>
@@ -96,11 +102,17 @@ namespace JFramework.Unity
         /// <returns></returns>
         public async Task Run()
         {
+            UniTask taskLoadConfigs = UniTask.CompletedTask;
+            if (configManager != null)
+                taskLoadConfigs = this.configManager.PreloadAllAsync().AsUniTask();
+
             this.modelManager.RegisterModels();
             this.viewControllerManager.RegisterViewControllers();
             this.controllerManager.RegisterControllers();
 
-            await SwitchToState(firstSceneState, context);
+            var taskSwitchState = SwitchToState(firstSceneState, context);
+
+            await UniTask.WhenAll(taskLoadConfigs, taskSwitchState);
         }
 
         #region Facade接口

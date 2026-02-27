@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using JFramework.Game;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
