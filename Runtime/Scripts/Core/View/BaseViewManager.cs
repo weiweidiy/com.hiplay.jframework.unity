@@ -11,7 +11,7 @@ namespace JFramework.Unity
         {
             var ctrollers = viewControllers[group];
 
-            return ctrollers.ToArray();
+            return ctrollers == null? null : ctrollers.ToArray();
         }
 
         public View GetViewController(string name)
