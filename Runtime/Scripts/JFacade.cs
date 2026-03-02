@@ -84,10 +84,16 @@ namespace JFramework.Unity
         /// </summary>
         IGameAssetsQuary gameAssetsQuary;
 
+        /// <summary>
+        /// 转场提供者，提供转场动画的功能，允许在场景切换时显示转场动画，提升游戏的视觉效果和用户体验
+        /// </summary>
+        ITransitionProvider transitionProvider;
+
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
             , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
             , IModelManager modelManager, IViewManager viewControllerContainer, IControllerManager controllerManager
-            , IHttpRequest httpRequest, IJConfigManager configManager, ISpriteManager spriteManager, IGameAssetsQuary gameAssetsQuary)
+            , IHttpRequest httpRequest, IJConfigManager configManager, ISpriteManager spriteManager, IGameAssetsQuary gameAssetsQuary
+            ,ITransitionProvider transitionProvider)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -107,6 +113,7 @@ namespace JFramework.Unity
             this.gameAssetsQuary = gameAssetsQuary;
             if(this.gameAssetsQuary != null)
                 this.gameAssetsQuary.SetFacade(this);
+            this.transitionProvider = transitionProvider;
         }
 
         /// <summary>
@@ -156,6 +163,18 @@ namespace JFramework.Unity
         public IJConfigManager GetConfigManager() => configManager;
 
         public IGameAssetsQuary GetGameAssetsQuary() => gameAssetsQuary;
+
+        public ITransitionProvider GetTransitionProvider() => transitionProvider;
+
+        public async UniTask<ITransition> TransitonOut(string transitionType)
+        {
+            var transition = await transitionProvider.InstantiateAsync(transitionType);
+            await transition.TransitionOut();
+            return transition;
+        }
+        
+
+        public async UniTask TransitonIn(ITransition transition) => await transition.TransitionIn();
 
         #endregion
 

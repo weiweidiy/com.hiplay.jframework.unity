@@ -1,4 +1,5 @@
-﻿using JFramework.Game;
+﻿using Cysharp.Threading.Tasks;
+using JFramework.Game;
 
 namespace JFramework.Unity
 {
@@ -27,5 +28,11 @@ namespace JFramework.Unity
         IJConfigManager GetConfigManager();
 
         IGameAssetsQuary GetGameAssetsQuary();
+
+        ITransitionProvider GetTransitionProvider();
+
+        UniTask<ITransition> TransitonOut(string transitionType);
+
+        UniTask TransitonIn(ITransition transition);
     }
 }

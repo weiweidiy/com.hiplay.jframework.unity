@@ -41,6 +41,8 @@ namespace JFramework.Unity
 
         IGameAssetsQuary gameAssetsQuary;
 
+        ITransitionProvider transitionProvider;
+
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -129,8 +131,14 @@ namespace JFramework.Unity
                 //gameAssetsQuary = new DefaultGameAssetsQuary(assetsLoader);
             }
 
+            if(transitionProvider == null)
+            {
+                transitionProvider = new SMTransitionProvider(assetsLoader);
+            }
+
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
-                    , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager, spriteManager, gameAssetsQuary);
+                    , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager, spriteManager, gameAssetsQuary
+                    , transitionProvider);
 
             return facade;
         }
@@ -240,6 +248,12 @@ namespace JFramework.Unity
         public FacadeBuilder SetGameAssetsQuary(IGameAssetsQuary gameAssetsQuary)
         {
             this.gameAssetsQuary = gameAssetsQuary;
+            return this;
+        }
+
+        public FacadeBuilder SetTransitionProvider(ITransitionProvider transitionProvider)
+        {
+            this.transitionProvider = transitionProvider;
             return this;
         }
     }
