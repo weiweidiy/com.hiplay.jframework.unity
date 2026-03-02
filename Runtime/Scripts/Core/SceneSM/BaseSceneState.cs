@@ -4,6 +4,7 @@ using Game.Common;
 using JFramework;
 using JFramework.Unity;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -133,6 +134,11 @@ namespace JFramework.Unity
         protected View[] GetControllers()
         {
             return context.Facade.GetViewControllerContainer().GetViewControllers(GetSceneType().ToString());
+        }
+
+        protected View GetController(string name)
+        {
+            return viewControllers.Where((ctrl) => ctrl.Name == name).FirstOrDefault();
         }
 
         protected abstract TSceneType GetSceneType();
