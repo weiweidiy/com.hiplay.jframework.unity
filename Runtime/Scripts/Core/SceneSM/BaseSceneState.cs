@@ -16,30 +16,17 @@ namespace JFramework.Unity
     /// <typeparam name="TContext"></typeparam>
     public abstract class BaseSceneState<TSceneType> : BaseStateAsync
     {
-        //[Inject]
-        //protected IAssetsLoader assetsLoader;
-        //[Inject]
-        //protected IInjectionContainer container;
-        ///// <summary>
-        ///// 游戏场景对象管理器
-        ///// </summary>
-        //[Inject]
-        //protected TiktokGameObjectManager gameObjectManager;
-        //[Inject]
-        //protected IJUIManager uiManager;
-        //[Inject]
-        //protected IGameAudioManager gameAudioManager;
-        //[Inject]
-        //protected TiktokConfigManager tiktokConfigManager;
-        //[Inject]
-        //protected EventManager eventManager;
-        //[Inject]
+ 
         protected List<View> viewControllers = new List<View>();
         /// <summary>
         /// 状态参数
         /// </summary>
         protected object arg;
-  
+
+        /// <summary>
+        /// 游戏对象根节点，所有的游戏对象都挂在这个节点下，方便管理和清理
+        /// </summary>
+        protected Transform goRoot;
 
         protected override async UniTask OnEnter(object arg)
         {
@@ -60,7 +47,7 @@ namespace JFramework.Unity
 
 
             // 创建一个根节点，所有的游戏对象都挂在这个节点下，方便管理
-            var root = new GameObject("GoRoot");
+            goRoot = (new GameObject("GoRoot")).transform;
             //gameObjectManager.GoRoot = root;
 
             //初始化ui管理器
