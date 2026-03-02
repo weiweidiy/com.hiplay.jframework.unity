@@ -146,7 +146,7 @@ namespace JFramework.Unity
 
         public IGameObjectManager GetGameObjectManager() => gameObjectManager;
         public ISpriteManager GetSpriteManager()=> spriteManager;
-
+        public IJConfigManager GetConfigManager() => configManager;
 
         #endregion
 
@@ -291,6 +291,8 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
+
+
 
 
 

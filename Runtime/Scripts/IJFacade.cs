@@ -1,4 +1,6 @@
-﻿namespace JFramework.Unity
+﻿using JFramework.Game;
+
+namespace JFramework.Unity
 {
     public interface IJFacade
     {
@@ -21,5 +23,7 @@
         IGameObjectManager GetGameObjectManager();
 
         ISpriteManager GetSpriteManager();
+
+        IJConfigManager GetConfigManager();
     }
 }
