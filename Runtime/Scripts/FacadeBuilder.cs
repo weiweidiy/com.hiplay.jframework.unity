@@ -36,6 +36,8 @@ namespace JFramework.Unity
 
         IConfigLoader configLoader;
 
+        ISpriteManager spriteManager;
+
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -113,8 +115,13 @@ namespace JFramework.Unity
                 configManager = new JConfigManager(configLoader);
             }
 
+            if(spriteManager == null)
+            {
+                spriteManager = new DefaultSpriteManager(assetsLoader);
+            }
+
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
-                    , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager);
+                    , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager, spriteManager);
 
             return facade;
         }
@@ -212,6 +219,12 @@ namespace JFramework.Unity
         public FacadeBuilder SetConfigLoader(IConfigLoader configLoader)
         {
             this.configLoader = configLoader;
+            return this;
+        }
+
+        public FacadeBuilder SetSpriteManager(ISpriteManager spriteManager)
+        {
+            this.spriteManager = spriteManager;
             return this;
         }
     }

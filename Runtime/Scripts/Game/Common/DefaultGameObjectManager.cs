@@ -35,7 +35,7 @@ namespace JFramework.Unity
         /// </summary>
         /// <param name="prefabsList"></param>
         /// <returns></returns>
-        public async UniTask Initialize(List<string> prefabsList)
+        public async UniTask PreloadGameObjects(List<string> prefabsList)
         {
             pools = new GameObject("Pools");
 

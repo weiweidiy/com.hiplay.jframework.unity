@@ -65,6 +65,11 @@ namespace JFramework.Unity
         IGameObjectManager gameObjectManager;
 
         /// <summary>
+        /// 精灵管理器
+        /// </summary>
+        ISpriteManager spriteManager;
+
+        /// <summary>
         /// http请求接口，提供发送http请求的功能，允许在游戏中方便地进行网络通信，获取服务器数据等操作
         /// </summary>
         IHttpRequest httpRequest;
@@ -78,7 +83,7 @@ namespace JFramework.Unity
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
             , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
             , IModelManager modelManager, IViewManager viewControllerContainer, IControllerManager controllerManager
-            , IHttpRequest httpRequest, IJConfigManager configManager)
+            , IHttpRequest httpRequest, IJConfigManager configManager, ISpriteManager spriteManager)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -94,25 +99,32 @@ namespace JFramework.Unity
             this.controllerManager = controllerManager;
             this.httpRequest = httpRequest;
             this.configManager = configManager;
+            this.spriteManager = spriteManager;
         }
 
         /// <summary>
         /// 运行游戏
         /// </summary>
+        /// <param name="beforeSwitchState">可以在切换状态前进行预加载，参数是IJConfigManager</param>
         /// <returns></returns>
-        public async Task Run()
+        public async Task Run(Func<IJConfigManager, UniTask> beforeSwitchState = null)
         {
             UniTask taskLoadConfigs = UniTask.CompletedTask;
             if (configManager != null)
                 taskLoadConfigs = this.configManager.PreloadAllAsync().AsUniTask();
 
+            await taskLoadConfigs;
+
             this.modelManager.RegisterModels();
             this.viewControllerManager.RegisterViewControllers();
             this.controllerManager.RegisterControllers();
 
-            var taskSwitchState = SwitchToState(firstSceneState, context);
+            if (beforeSwitchState != null)
+                await beforeSwitchState(configManager);
+            else
+                await UniTask.CompletedTask;
 
-            await UniTask.WhenAll(taskLoadConfigs, taskSwitchState);
+            await SwitchToState(firstSceneState, context);
         }
 
         #region Facade接口
@@ -146,9 +158,9 @@ namespace JFramework.Unity
         #endregion
 
         #region 游戏对象管理器接口
-        public UniTask Initialize(List<string> prefabsList)
+        public UniTask PreloadGameObjects(List<string> prefabsList)
         {
-            return gameObjectManager.Initialize(prefabsList);
+            return gameObjectManager.PreloadGameObjects(prefabsList);
         }
 
         public GameObject Rent(string name, Transform parent)
