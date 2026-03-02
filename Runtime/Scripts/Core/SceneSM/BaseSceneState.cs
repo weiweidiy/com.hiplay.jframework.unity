@@ -136,9 +136,9 @@ namespace JFramework.Unity
             return context.Facade.GetViewControllerContainer().GetViewControllers(GetSceneType().ToString());
         }
 
-        protected View GetController(string name)
+        protected View GetController<TView>() where TView : View
         {
-            return viewControllers.Where((ctrl) => ctrl.Name == name).FirstOrDefault();
+            return viewControllers.Where((ctrl) => ctrl is TView).FirstOrDefault();
         }
 
         protected abstract TSceneType GetSceneType();
