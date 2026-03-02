@@ -25,5 +25,7 @@ namespace JFramework.Unity
         ISpriteManager GetSpriteManager();
 
         IJConfigManager GetConfigManager();
+
+        IGameAssetsQuary GetGameAssetsQuary();
     }
 }

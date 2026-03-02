@@ -1,4 +1,5 @@
 ﻿using JFramework.Game;
+using UnityEngine;
 
 namespace JFramework.Unity
 {
@@ -37,6 +38,8 @@ namespace JFramework.Unity
         IConfigLoader configLoader;
 
         ISpriteManager spriteManager;
+
+        IGameAssetsQuary gameAssetsQuary;
 
         public JFacade Build()
         {
@@ -120,8 +123,14 @@ namespace JFramework.Unity
                 spriteManager = new DefaultSpriteManager(assetsLoader);
             }
 
+            if(gameAssetsQuary == null)
+            {
+                Debug.LogWarning("GameAssetsQuary is not set in FacadeBuilder, using DefaultGameAssetsQuary. You can set a custom GameAssetsQuary by calling SetGameAssetsQuary method in FacadeBuilder.");
+                //gameAssetsQuary = new DefaultGameAssetsQuary(assetsLoader);
+            }
+
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
-                    , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager, spriteManager);
+                    , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager, spriteManager, gameAssetsQuary);
 
             return facade;
         }
@@ -225,6 +234,12 @@ namespace JFramework.Unity
         public FacadeBuilder SetSpriteManager(ISpriteManager spriteManager)
         {
             this.spriteManager = spriteManager;
+            return this;
+        }
+
+        public FacadeBuilder SetGameAssetsQuary(IGameAssetsQuary gameAssetsQuary)
+        {
+            this.gameAssetsQuary = gameAssetsQuary;
             return this;
         }
     }

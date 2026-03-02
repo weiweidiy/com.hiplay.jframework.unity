@@ -79,11 +79,15 @@ namespace JFramework.Unity
         /// </summary>
         IJConfigManager configManager;
 
+        /// <summary>
+        /// 游戏资源快捷查询接口，提供快速查询游戏资源的功能，允许在游戏中方便地获取各种资源，如预制体、音频、特效等，提升资源管理的效率和便利性
+        /// </summary>
+        IGameAssetsQuary gameAssetsQuary;
 
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
             , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
             , IModelManager modelManager, IViewManager viewControllerContainer, IControllerManager controllerManager
-            , IHttpRequest httpRequest, IJConfigManager configManager, ISpriteManager spriteManager)
+            , IHttpRequest httpRequest, IJConfigManager configManager, ISpriteManager spriteManager, IGameAssetsQuary gameAssetsQuary)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -92,7 +96,7 @@ namespace JFramework.Unity
             this.sm = sm;
             this.firstSceneState = firstSceneState;
             this.context = context;
-            context.Facade = this;
+            this.context.Facade = this;
             this.gameObjectManager = gameObjectManager;
             this.viewControllerManager = viewControllerContainer;
             this.modelManager = modelManager;
@@ -100,6 +104,9 @@ namespace JFramework.Unity
             this.httpRequest = httpRequest;
             this.configManager = configManager;
             this.spriteManager = spriteManager;
+            this.gameAssetsQuary = gameAssetsQuary;
+            if(this.gameAssetsQuary != null)
+                this.gameAssetsQuary.SetFacade(this);
         }
 
         /// <summary>
@@ -147,6 +154,8 @@ namespace JFramework.Unity
         public IGameObjectManager GetGameObjectManager() => gameObjectManager;
         public ISpriteManager GetSpriteManager()=> spriteManager;
         public IJConfigManager GetConfigManager() => configManager;
+
+        public IGameAssetsQuary GetGameAssetsQuary() => gameAssetsQuary;
 
         #endregion
 
@@ -291,6 +300,8 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
+
+  
 
 
 
