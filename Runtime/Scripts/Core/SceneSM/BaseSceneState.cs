@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Game.Common;
 using JFramework;
 using JFramework.Unity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -130,15 +131,31 @@ namespace JFramework.Unity
             return GetAssetsLoader().LoadSceneAsync(sceneName, sceneMode).AsUniTask();
         }
 
-
+        /// <summary>
+        /// 获取当前状态下所有注册的ViewController，子类可以通过GetController<TView>()方法获取指定类型的ViewController
+        /// </summary>
+        /// <returns></returns>
         protected View[] GetControllers()
         {
             return context.Facade.GetViewControllerContainer().GetViewControllers(GetSceneType().ToString());
         }
 
-        protected View GetController<TView>() where TView : View
+        /// <summary>
+        /// 获取指定类型的ViewController，如果当前场景没有该类型的ViewController，则返回null
+        /// </summary>
+        /// <typeparam name="TView"></typeparam>
+        /// <returns></returns>
+        protected TView GetController<TView>() where TView : View
         {
-            return viewControllers.Where((ctrl) => ctrl is TView).FirstOrDefault();
+            try
+            {
+                return viewControllers.Where((ctrl) => ctrl is TView).FirstOrDefault() as TView;
+            }
+            catch(Exception e)
+            {
+                Debug.LogError("GetController " + typeof(TView).ToString() + " failed! " + e.ToString());
+                throw;
+            }
         }
 
         protected abstract TSceneType GetSceneType();
