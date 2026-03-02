@@ -33,7 +33,7 @@ namespace JFramework.Unity
             // 批量添加新数据
             AddRange(lstData);
 
-            //Debug.Log("Model Initialize " + this.GetType());
+            //Debug.Log("Model PreloadSprites " + this.GetType());
         }
 
         /// <summary>

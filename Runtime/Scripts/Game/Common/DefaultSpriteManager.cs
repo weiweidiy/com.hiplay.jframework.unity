@@ -17,7 +17,7 @@ namespace JFramework.Unity
             this.assetsLoader = assetsLoader;
         }
 
-        public async UniTask Initialize(List<string> spritesList)
+        public async UniTask PreloadSprites(List<string> spritesList)
         {
             var tasks = new List<UniTask>();
             foreach (var texture in spritesList)

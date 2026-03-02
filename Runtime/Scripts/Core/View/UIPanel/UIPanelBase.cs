@@ -92,7 +92,7 @@ namespace JFramework.Unity
         ////}
 
     
-        ////public void Initialize(EventManager eventManager)
+        ////public void PreloadSprites(EventManager eventManager)
         ////{
         ////    this.eventManager = eventManager;
         ////}

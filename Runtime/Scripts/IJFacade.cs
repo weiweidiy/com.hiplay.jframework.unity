@@ -19,5 +19,7 @@
         IHttpRequest GetHttpRequest();
 
         IGameObjectManager GetGameObjectManager();
+
+        ISpriteManager GetSpriteManager();
     }
 }

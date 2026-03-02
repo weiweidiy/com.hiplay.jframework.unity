@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace JFramework.Unity
 {
-    public class JFacade : IJUIManager, IJNetworkable, ISceneStateMachineAsync, IJFacade, IGameObjectManager
+    public class JFacade : IJUIManager, IJNetworkable, ISceneStateMachineAsync, IJFacade, IGameObjectManager, ISpriteManager
     {
         /// <summary>
         /// UI管理器
@@ -145,7 +145,7 @@ namespace JFramework.Unity
         public IHttpRequest GetHttpRequest()=> httpRequest;
 
         public IGameObjectManager GetGameObjectManager() => gameObjectManager;
-
+        public ISpriteManager GetSpriteManager()=> spriteManager;
 
 
         #endregion
@@ -176,6 +176,23 @@ namespace JFramework.Unity
         public UniTask<GameObject> InstantiateAsync(string location, Transform parent)
         {
             return gameObjectManager.InstantiateAsync(location, parent);
+        }
+        #endregion
+
+        #region 精灵管理器接口
+        public UniTask PreloadSprites(List<string> spritesList)
+        {
+            return spriteManager.PreloadSprites(spritesList);
+        }
+
+        public Sprite GetSprite(string name)
+        {
+            return spriteManager.GetSprite(name);
+        }
+
+        public UniTask<Sprite> LoadSpriteAsync(string location)
+        {
+            return spriteManager.LoadSpriteAsync(location);
         }
         #endregion
 
@@ -274,6 +291,10 @@ namespace JFramework.Unity
             }
             networkManager.Disconnect();
         }
+
+
+
+
 
 
 

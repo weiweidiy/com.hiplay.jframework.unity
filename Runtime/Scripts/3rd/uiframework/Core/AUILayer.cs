@@ -31,7 +31,7 @@ namespace deVoid.UIFramework {
         public abstract void HideScreen(TScreen screen);
 
         /// <summary>
-        /// Initialize this layer
+        /// PreloadSprites this layer
         /// </summary>
         public virtual void Initialize() {
             registeredScreens = new Dictionary<string, TScreen>();

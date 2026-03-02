@@ -7,7 +7,7 @@ namespace JFramework.Unity
 {
     public interface ISpriteManager
     {
-        UniTask Initialize(List<string> spritesList);
+        UniTask PreloadSprites(List<string> spritesList);
         Sprite GetSprite(string name);
         UniTask<Sprite> LoadSpriteAsync(string location);
     }
