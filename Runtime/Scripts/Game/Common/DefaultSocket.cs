@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace JFramework.Unity
 {
-    public class DefaultSocket : IJSocket
+    public class DefaultSocket : JBaseSocket
     {
         private Socket _socket;
         private string _url;
@@ -15,14 +15,14 @@ namespace JFramework.Unity
         private bool _isOpen;
         private Thread _receiveThread;
 
-        public bool IsOpen => _isOpen;
+        public override bool IsOpen => _isOpen;
 
-        public event Action<IJSocket> onOpen;
-        public event Action<IJSocket, SocketStatusCodes, string> onClosed;
-        public event Action<IJSocket, string> onError;
-        public event Action<IJSocket, byte[]> onBinary;
+        //public event Action<IJSocket> onOpen;
+        //public event Action<IJSocket, SocketStatusCodes, string> onClosed;
+        //public event Action<IJSocket, string> onError;
+        //public event Action<IJSocket, byte[]> onBinary;
 
-        public void Init(string url, string token = null)
+        public override void Init(string url, string token = null)
         {
             _url = url;
             _token = token;
@@ -32,13 +32,13 @@ namespace JFramework.Unity
             var parts = url.Split(':');
             if (parts.Length != 2 || !int.TryParse(parts[1], out _port))
             {
-                onError?.Invoke(this, "Invalid url format. Use host:port");
+                OnError(this, "Invalid url format. Use host:port");
                 return;
             }
             _host = parts[0];
         }
 
-        public void Open()
+        public override void Open()
         {
             try
             {
@@ -50,7 +50,7 @@ namespace JFramework.Unity
                 _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 _socket.Connect(_host, _port);
                 _isOpen = true;
-                onOpen?.Invoke(this);
+                OnOpen(this);
 
                 // 启动接收线程
                 _receiveThread = new Thread(ReceiveLoop);
@@ -60,11 +60,11 @@ namespace JFramework.Unity
             catch (Exception ex)
             {
                 _isOpen = false;
-                onError?.Invoke(this, ex.Message);
+                OnError(this, ex.Message);
             }
         }
 
-        public void Close()
+        public override void Close()
         {
             try
             {
@@ -72,15 +72,15 @@ namespace JFramework.Unity
                 _socket?.Shutdown(SocketShutdown.Both);
                 _socket?.Close();
                 _socket = null;
-                onClosed?.Invoke(this, SocketStatusCodes.NormalClosure, "Closed by user");
+                OnClosed(this, SocketStatusCodes.NormalClosure, "Closed by user");
             }
             catch (Exception ex)
             {
-                onError?.Invoke(this, ex.Message);
+                OnError(this, ex.Message);
             }
         }
 
-        public void Send(byte[] data)
+        public override void Send(byte[] data)
         {
             try
             {
@@ -90,12 +90,12 @@ namespace JFramework.Unity
                 }
                 else
                 {
-                    onError?.Invoke(this, "Socket is not open.");
+                    OnError(this, "Socket is not open.");
                 }
             }
             catch (Exception ex)
             {
-                onError?.Invoke(this, ex.Message);
+                OnError(this, ex.Message);
             }
         }
 
@@ -111,13 +111,13 @@ namespace JFramework.Unity
                     {
                         var data = new byte[bytesRead];
                         Array.Copy(buffer, data, bytesRead);
-                        onBinary?.Invoke(this, data);
+                        OnBinary(this, data);
                     }
                     else
                     {
                         // 连接关闭
                         _isOpen = false;
-                        onClosed?.Invoke(this, SocketStatusCodes.NormalClosure, "Remote closed");
+                        OnClosed(this, SocketStatusCodes.NormalClosure, "Remote closed");
                         break;
                     }
                 }
@@ -125,8 +125,8 @@ namespace JFramework.Unity
             catch (Exception ex)
             {
                 _isOpen = false;
-                onError?.Invoke(this, ex.Message);
-                onClosed?.Invoke(this, SocketStatusCodes.NormalClosure, "Receive error");
+                OnError(this, ex.Message);
+                OnClosed(this, SocketStatusCodes.NormalClosure, "Receive error");
             }
         }
     }

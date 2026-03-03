@@ -43,6 +43,25 @@ namespace JFramework.Unity
 
         ITransitionProvider transitionProvider;
 
+        ISocketFactory socketFactory;
+
+        IJSocket socket;
+
+        INetworkMessageProcessStrate networkMessageProcessStrate;
+
+        INetMessageSerializerStrate netMessageSerializerStrate;
+
+        IMessageTypeResolver messageTypeResolver;
+
+        ITypeRegister protocolRegister;
+
+        JDataProcesserManager outProcesserManager;
+
+        JDataProcesserManager comingProcesserManager;
+
+        INetworkMessageHandler networkMessageHandler;
+
+
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -134,6 +153,56 @@ namespace JFramework.Unity
             if(transitionProvider == null)
             {
                 transitionProvider = new SMTransitionProvider(assetsLoader);
+            }
+
+            if(socket == null)
+            {
+                socket = new DefaultSocket();
+            }
+
+            if (socketFactory == null)
+            {
+                socketFactory = new DefaultSocketFactory(socket);
+            }
+
+            if(netMessageSerializerStrate == null)
+            {
+                netMessageSerializerStrate = new JNetMessageJsonSerializerStrate(dataConverter);
+            }
+
+            if(protocolRegister == null)
+            {
+                //protocolRegister = new DefaultTypeRegister();
+            }
+
+            if (messageTypeResolver == null)
+            {
+                messageTypeResolver = new JNetMessageJsonTypeResolver(dataConverter, protocolRegister);
+            }
+
+            if(outProcesserManager == null)
+            {
+                //outProcesserManager = new JDataProcesserManager();
+            }
+
+            if(comingProcesserManager == null)
+            {
+                //comingProcesserManager = new JDataProcesserManager();
+            }
+
+            if (networkMessageProcessStrate == null)
+            {
+                networkMessageProcessStrate = new JNetworkMessageProcessStrate(netMessageSerializerStrate, messageTypeResolver, outProcesserManager, comingProcesserManager);
+            }
+
+            if(networkMessageHandler == null)
+            {
+                //networkMessageHandler = new DefaultNetworkMessageHandler();
+            }
+
+            if (networkManager == null)
+            {
+                networkManager = new JNetwork(socketFactory, new JTaskCompletionSourceManager<IUnique>(), networkMessageProcessStrate, networkMessageHandler);
             }
 
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
@@ -256,5 +325,63 @@ namespace JFramework.Unity
             this.transitionProvider = transitionProvider;
             return this;
         }
+
+        public FacadeBuilder SetSocketFactory(ISocketFactory socketFactory)
+        {
+            this.socketFactory = socketFactory;
+            return this;
+        }
+
+        public FacadeBuilder SetSocket(IJSocket socket)
+        {
+            this.socket = socket;
+            return this;
+        }
+
+        public FacadeBuilder SetNetworkMessageProcessStrate(INetworkMessageProcessStrate networkMessageProcessStrate)
+        {
+            this.networkMessageProcessStrate = networkMessageProcessStrate;
+            return this;
+        }
+
+        public FacadeBuilder SetNetMessageSerializerStrate(INetMessageSerializerStrate netMessageSerializerStrate)
+        {
+            this.netMessageSerializerStrate = netMessageSerializerStrate;
+            return this;
+        }
+
+        public FacadeBuilder SetMessageTypeResolver(IMessageTypeResolver messageTypeResolver)
+        {
+            this.messageTypeResolver = messageTypeResolver;
+            return this;
+        }
+
+        public FacadeBuilder SetProtocolRegister(ITypeRegister protocolRegister)
+        {
+            this.protocolRegister = protocolRegister;
+            return this;
+        }
+
+        public FacadeBuilder SetOutProcesserManager(JDataProcesserManager outProcesserManager)
+        {
+            this.outProcesserManager = outProcesserManager;
+            return this;
+        }
+
+        public FacadeBuilder SetComingProcesserManager(JDataProcesserManager comingProcesserManager)
+        {
+            this.comingProcesserManager = comingProcesserManager;
+            return this;
+        }
+
+        public FacadeBuilder SetNetworkMessageHandler(INetworkMessageHandler networkMessageHandler)
+        {
+            this.networkMessageHandler = networkMessageHandler;
+            return this;
+        }
+
+
+
+
     }
 }
