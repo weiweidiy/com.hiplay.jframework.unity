@@ -166,6 +166,8 @@ namespace JFramework.Unity
 
         public ITransitionProvider GetTransitionProvider() => transitionProvider;
 
+        public IJNetwork GetNetworkManager() => networkManager;
+
         public async UniTask<ITransition> TransitonOut(string transitionType)
         {
             var transition = await transitionProvider.InstantiateAsync(transitionType);

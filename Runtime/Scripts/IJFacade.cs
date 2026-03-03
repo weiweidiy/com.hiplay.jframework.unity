@@ -34,5 +34,7 @@ namespace JFramework.Unity
         UniTask<ITransition> TransitonOut(string transitionType);
 
         UniTask TransitonIn(ITransition transition);
+
+        IJNetwork GetNetworkManager();
     }
 }
