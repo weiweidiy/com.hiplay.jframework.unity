@@ -15,7 +15,7 @@ namespace JFramework.Unity
         private bool _isOpen;
         private Thread _receiveThread;
 
-        public override bool IsOpen => _isOpen;
+        public override bool IsOpen { get => _isOpen; set => _isOpen = value; }
 
         //public event Action<IJSocket> onOpen;
         //public event Action<IJSocket, SocketStatusCodes, string> onClosed;
