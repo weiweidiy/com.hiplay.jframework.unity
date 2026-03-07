@@ -59,7 +59,7 @@ namespace JFramework.Unity
 
         JDataProcesserManager comingProcesserManager;
 
-        INetworkMessageHandler networkMessageHandler;
+        BaseNetworkMessageHandler networkMessageHandler;
 
 
         public JFacade Build()
@@ -195,10 +195,7 @@ namespace JFramework.Unity
                 networkMessageProcessStrate = new JNetworkMessageProcessStrate(netMessageSerializerStrate, messageTypeResolver, outProcesserManager, comingProcesserManager);
             }
 
-            if(networkMessageHandler == null)
-            {
-                //networkMessageHandler = new DefaultNetworkMessageHandler();
-            }
+
 
             if (networkManager == null)
             {
@@ -208,6 +205,11 @@ namespace JFramework.Unity
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
                     , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager, spriteManager, gameAssetsQuary
                     , transitionProvider);
+
+            if (networkMessageHandler != null)
+            {
+                networkMessageHandler.Facade = facade;
+            }
 
             return facade;
         }
@@ -374,7 +376,7 @@ namespace JFramework.Unity
             return this;
         }
 
-        public FacadeBuilder SetNetworkMessageHandler(INetworkMessageHandler networkMessageHandler)
+        public FacadeBuilder SetNetworkMessageHandler(BaseNetworkMessageHandler networkMessageHandler)
         {
             this.networkMessageHandler = networkMessageHandler;
             return this;
