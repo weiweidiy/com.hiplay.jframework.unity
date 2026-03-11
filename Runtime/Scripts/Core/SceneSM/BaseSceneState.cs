@@ -118,6 +118,7 @@ namespace JFramework.Unity
         {
             //显示背景音乐
             //await gameAudioManager.PlayMusic(GetBGMClipName(), true, 0.5f);
+            await UniTask.CompletedTask;
         }
 
         /// <summary>
@@ -126,7 +127,7 @@ namespace JFramework.Unity
         /// <param name="sceneName"></param>
         /// <param name="sceneMode"></param>
         /// <returns></returns>
-        protected UniTask<Scene> SwitchScene(string sceneName, SceneMode sceneMode)
+        protected virtual UniTask<Scene> SwitchScene(string sceneName, SceneMode sceneMode)
         {
             return GetAssetsLoader().LoadSceneAsync(sceneName, sceneMode).AsUniTask();
         }
