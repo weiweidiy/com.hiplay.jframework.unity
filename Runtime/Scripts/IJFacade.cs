@@ -36,5 +36,7 @@ namespace JFramework.Unity
         UniTask TransitonIn(ITransition transition);
 
         IJNetwork GetNetworkManager();
+
+        GameContext GetGameContext();
     }
 }

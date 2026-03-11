@@ -168,6 +168,8 @@ namespace JFramework.Unity
 
         public IJNetwork GetNetworkManager() => networkManager;
 
+        public GameContext GetGameContext() => context;
+
         public async UniTask<ITransition> TransitonOut(string transitionType)
         {
             var transition = await transitionProvider.InstantiateAsync(transitionType);
