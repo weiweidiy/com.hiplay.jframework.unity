@@ -43,24 +43,30 @@ namespace JFramework.Unity
 
         ITransitionProvider transitionProvider;
 
-        ISocketFactory socketFactory;
+        //ISocketFactory socketFactory;
 
-        IJSocket socket;
+        //IJSocket socket;
 
-        INetworkMessageProcessStrate networkMessageProcessStrate;
+        //INetworkMessageProcessStrate networkMessageProcessStrate;
 
-        INetMessageSerializerStrate netMessageSerializerStrate;
+        //INetMessageSerializerStrate netMessageSerializerStrate;
 
-        IMessageTypeResolver messageTypeResolver;
+        //IMessageTypeResolver messageTypeResolver;
 
-        ITypeRegister protocolRegister;
+        //ITypeRegister protocolRegister;
 
-        JDataProcesserManager outProcesserManager;
+        //JDataProcesserManager outProcesserManager;
 
-        JDataProcesserManager comingProcesserManager;
+        //JDataProcesserManager comingProcesserManager;
 
         BaseNetworkMessageHandler networkMessageHandler;
 
+        JNetworkBuilder networkBuilder;
+
+        public void UseNetworkSocket(bool useSocket)
+        {
+            networkBuilder = useSocket ? new JNetworkBuilder() : null;
+        }
 
         public JFacade Build()
         {
@@ -111,7 +117,7 @@ namespace JFramework.Unity
 
             if (dataConverter == null)
             {
-                dataConverter = new DefaultDataConverter();
+                dataConverter = new JDataConverter();
             }
 
             if (httpRequest == null)
@@ -139,67 +145,67 @@ namespace JFramework.Unity
                 configManager = new JConfigManager(configLoader);
             }
 
-            if(spriteManager == null)
+            if (spriteManager == null)
             {
                 spriteManager = new DefaultSpriteManager(assetsLoader);
             }
 
-            if(gameAssetsQuary == null)
+            if (gameAssetsQuary == null)
             {
                 Debug.LogWarning("GameAssetsQuary is not set in FacadeBuilder, using DefaultGameAssetsQuary. You can set a custom GameAssetsQuary by calling SetGameAssetsQuary method in FacadeBuilder.");
                 //gameAssetsQuary = new DefaultGameAssetsQuary(assetsLoader);
             }
 
-            if(transitionProvider == null)
+            if (transitionProvider == null)
             {
                 transitionProvider = new SMTransitionProvider(assetsLoader);
             }
 
-            if(socket == null)
+            //if(socket == null)
+            //{
+            //    socket = new JSocket();
+            //}
+
+            //if (socketFactory == null)
+            //{
+            //    socketFactory = new JSocketFactory(socket);
+            //}
+
+            //if (netMessageSerializerStrate == null)
+            //{
+            //    netMessageSerializerStrate = new JNetMessageJsonSerializerStrate(dataConverter);
+            //}
+
+            //if (protocolRegister == null)
+            //{
+            //    //protocolRegister = new DefaultTypeRegister();
+            //}
+
+            //if (messageTypeResolver == null)
+            //{
+            //    messageTypeResolver = new JNetMessageJsonTypeResolver(dataConverter, protocolRegister);
+            //}
+
+            //if (outProcesserManager == null)
+            //{
+            //    //outProcesserManager = new JDataProcesserManager();
+            //}
+
+            //if (comingProcesserManager == null)
+            //{
+            //    //comingProcesserManager = new JDataProcesserManager();
+            //}
+
+            //if (networkMessageProcessStrate == null)
+            //{
+            //    networkMessageProcessStrate = new JNetworkMessageProcessStrate(netMessageSerializerStrate, messageTypeResolver, outProcesserManager, comingProcesserManager);
+            //}
+
+            if (networkManager == null && networkBuilder != null)
             {
-                socket = new DefaultSocket();
-            }
-
-            if (socketFactory == null)
-            {
-                socketFactory = new DefaultSocketFactory(socket);
-            }
-
-            if(netMessageSerializerStrate == null)
-            {
-                netMessageSerializerStrate = new JNetMessageJsonSerializerStrate(dataConverter);
-            }
-
-            if(protocolRegister == null)
-            {
-                //protocolRegister = new DefaultTypeRegister();
-            }
-
-            if (messageTypeResolver == null)
-            {
-                messageTypeResolver = new JNetMessageJsonTypeResolver(dataConverter, protocolRegister);
-            }
-
-            if(outProcesserManager == null)
-            {
-                //outProcesserManager = new JDataProcesserManager();
-            }
-
-            if(comingProcesserManager == null)
-            {
-                //comingProcesserManager = new JDataProcesserManager();
-            }
-
-            if (networkMessageProcessStrate == null)
-            {
-                networkMessageProcessStrate = new JNetworkMessageProcessStrate(netMessageSerializerStrate, messageTypeResolver, outProcesserManager, comingProcesserManager);
-            }
-
-
-
-            if (networkManager == null)
-            {
-                networkManager = new JNetwork(socketFactory, new JTaskCompletionSourceManager<IUnique>(), networkMessageProcessStrate, networkMessageHandler);
+                networkBuilder.SetDataConverter(dataConverter);
+                networkManager = networkBuilder.Build();
+                //networkManager = new JNetwork(socketFactory, new JTaskCompletionSourceManager<IUnique>(), networkMessageProcessStrate, networkMessageHandler);
             }
 
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
@@ -295,6 +301,7 @@ namespace JFramework.Unity
         public FacadeBuilder SetDataConverter(IDataConverter dataConverter)
         {
             this.dataConverter = dataConverter;
+
             return this;
         }
 
@@ -330,54 +337,101 @@ namespace JFramework.Unity
 
         public FacadeBuilder SetSocketFactory(ISocketFactory socketFactory)
         {
-            this.socketFactory = socketFactory;
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+
+            networkBuilder.SetSocketFactory(socketFactory);
+            //this.socketFactory = socketFactory;
             return this;
         }
 
         public FacadeBuilder SetSocket(IJSocket socket)
         {
-            this.socket = socket;
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.SetSocket(socket);
+            //this.socket = socket;
             return this;
         }
 
         public FacadeBuilder SetNetworkMessageProcessStrate(INetworkMessageProcessStrate networkMessageProcessStrate)
         {
-            this.networkMessageProcessStrate = networkMessageProcessStrate;
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+
+            networkBuilder.SetMessageProcessStrate(networkMessageProcessStrate);
+            //this.networkMessageProcessStrate = networkMessageProcessStrate;
             return this;
         }
 
         public FacadeBuilder SetNetMessageSerializerStrate(INetMessageSerializerStrate netMessageSerializerStrate)
         {
-            this.netMessageSerializerStrate = netMessageSerializerStrate;
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.SetNetMessageSerializerStrate(netMessageSerializerStrate);
+            //this.netMessageSerializerStrate = netMessageSerializerStrate;
             return this;
         }
 
         public FacadeBuilder SetMessageTypeResolver(IMessageTypeResolver messageTypeResolver)
         {
-            this.messageTypeResolver = messageTypeResolver;
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.SetMessageTypeResolver(messageTypeResolver);
+            //this.messageTypeResolver = messageTypeResolver;
             return this;
         }
 
         public FacadeBuilder SetProtocolRegister(ITypeRegister protocolRegister)
         {
-            this.protocolRegister = protocolRegister;
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.SetProtocolRegister(protocolRegister);
+            //this.protocolRegister = protocolRegister;
             return this;
         }
 
         public FacadeBuilder SetOutProcesserManager(JDataProcesserManager outProcesserManager)
         {
-            this.outProcesserManager = outProcesserManager;
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.SetOutDataProcesser(outProcesserManager);
+            //this.outProcesserManager = outProcesserManager;
             return this;
         }
 
         public FacadeBuilder SetComingProcesserManager(JDataProcesserManager comingProcesserManager)
         {
-            this.comingProcesserManager = comingProcesserManager;
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.SetComingDataProcesser(comingProcesserManager);
+            //this.comingProcesserManager = comingProcesserManager;
             return this;
         }
 
         public FacadeBuilder SetNetworkMessageHandler(BaseNetworkMessageHandler networkMessageHandler)
         {
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.SetMessageHandler(networkMessageHandler);
             this.networkMessageHandler = networkMessageHandler;
             return this;
         }
