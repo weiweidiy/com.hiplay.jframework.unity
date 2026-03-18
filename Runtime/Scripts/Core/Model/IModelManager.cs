@@ -4,6 +4,6 @@
     {
         void RegisterModels();
 
-        T GetModel<T>(string key) where T : class;
+        T GetModel<T>(/*string key*/) where T : class;
     }
 }

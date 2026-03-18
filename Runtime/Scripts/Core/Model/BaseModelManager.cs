@@ -7,8 +7,9 @@ namespace JFramework.Unity
     {
         protected Dictionary<string, object> models = new();
         public abstract void RegisterModels();
-        public T GetModel<T>(string key) where T : class
+        public T GetModel<T>(/*string key*/) where T : class
         {
+            var key = nameof(T);
             if (models.TryGetValue(key, out var model))
             {
                 return model as T;
