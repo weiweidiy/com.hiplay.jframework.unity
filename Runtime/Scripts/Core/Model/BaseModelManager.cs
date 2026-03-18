@@ -6,6 +6,8 @@ namespace JFramework.Unity
     public abstract class BaseModelManager : IModelManager
     {
         protected Dictionary<string, object> models = new();
+
+        public IJFacade Facade { get; set; }
         public abstract void RegisterModels();
         public T GetModel<T>(/*string key*/) where T : class
         {

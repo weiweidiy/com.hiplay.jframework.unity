@@ -21,7 +21,7 @@ namespace JFramework.Unity
 
         IViewManager viewControllerManager;
 
-        IModelManager modelManager;
+        BaseModelManager modelManager;
 
         IControllerManager controllerManager;
 
@@ -161,46 +161,7 @@ namespace JFramework.Unity
                 transitionProvider = new SMTransitionProvider(assetsLoader);
             }
 
-            //if(socket == null)
-            //{
-            //    socket = new JSocket();
-            //}
-
-            //if (socketFactory == null)
-            //{
-            //    socketFactory = new JSocketFactory(socket);
-            //}
-
-            //if (netMessageSerializerStrate == null)
-            //{
-            //    netMessageSerializerStrate = new JNetMessageJsonSerializerStrate(dataConverter);
-            //}
-
-            //if (protocolRegister == null)
-            //{
-            //    //protocolRegister = new DefaultTypeRegister();
-            //}
-
-            //if (messageTypeResolver == null)
-            //{
-            //    messageTypeResolver = new JNetMessageJsonTypeResolver(dataConverter, protocolRegister);
-            //}
-
-            //if (outProcesserManager == null)
-            //{
-            //    //outProcesserManager = new JDataProcesserManager();
-            //}
-
-            //if (comingProcesserManager == null)
-            //{
-            //    //comingProcesserManager = new JDataProcesserManager();
-            //}
-
-            //if (networkMessageProcessStrate == null)
-            //{
-            //    networkMessageProcessStrate = new JNetworkMessageProcessStrate(netMessageSerializerStrate, messageTypeResolver, outProcesserManager, comingProcesserManager);
-            //}
-
+           
             if (networkManager == null && networkBuilder != null)
             {
                 networkBuilder.SetDataConverter(dataConverter);
@@ -215,6 +176,11 @@ namespace JFramework.Unity
             if (networkMessageHandler != null)
             {
                 networkMessageHandler.Facade = facade;
+            }
+
+            if(modelManager != null)
+            {
+                modelManager.Facade = facade;
             }
 
             return facade;
@@ -268,7 +234,7 @@ namespace JFramework.Unity
             return this;
         }
 
-        public FacadeBuilder SetModelManager(IModelManager modelManager)
+        public FacadeBuilder SetModelManager(BaseModelManager modelManager)
         {
             this.modelManager = modelManager;
             return this;
