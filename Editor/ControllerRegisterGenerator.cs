@@ -4,17 +4,17 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
-public class NetMessageRegisterGenerator : EditorWindow
+public class ControllerRegisterGenerator : EditorWindow
 {
-    private string sourceDir = "Assets/Downloads/HotfixScripts/Protocol/SocketMessages";
-    private string outputDir = "Assets/Downloads/HotfixScripts/Protocol/AutoGen";
-    private string outputFileName = "AutoNetMessageRegister.cs";
+    private string controllerSourceDir = "Assets/Downloads/HotfixScripts/Logic/Controller";
+    private string controllerOutputDir = "Assets/Downloads/HotfixScripts/AutoGen/Controllers";
+    private string controllerOutputFileName = "GameControllerManager";
     private Vector2 scrollPos;
 
-    [MenuItem("JFrameworkTools/生成NetMessage注册文件")]
+    [MenuItem("JFrameworkTools/生成Controllers注册文件")]
     public static void ShowWindow()
     {
-        var window = GetWindow<NetMessageRegisterGenerator>("NetMessage注册生成器");
+        var window = GetWindow<ControllerRegisterGenerator>("Controller注册生成器");
         window.minSize = new Vector2(500, 200);
     }
 
@@ -22,20 +22,20 @@ public class NetMessageRegisterGenerator : EditorWindow
     {
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
-        GUILayout.Label("NetMessage注册文件生成器", EditorStyles.boldLabel);
-        sourceDir = EditorGUILayout.TextField("源目录", sourceDir);
-        outputDir = EditorGUILayout.TextField("输出目录", outputDir);
+        GUILayout.Label("Controller注册文件生成器", EditorStyles.boldLabel);
+        controllerSourceDir = EditorGUILayout.TextField("源目录", controllerSourceDir);
+        controllerOutputDir = EditorGUILayout.TextField("输出目录", controllerOutputDir);
 
         GUILayout.Space(10);
         if (GUILayout.Button("生成注册文件"))
         {
-            GenerateRegisterFile();
+            GenerateRegisterFile(controllerSourceDir, controllerOutputDir, controllerOutputFileName);
         }
 
         EditorGUILayout.EndScrollView();
     }
 
-    private void GenerateRegisterFile()
+    private void GenerateRegisterFile(string sourceDir, string outputDir, string viewOutputFileName)
     {
         if (!Directory.Exists(sourceDir))
         {
@@ -67,26 +67,26 @@ public class NetMessageRegisterGenerator : EditorWindow
         var tablesContent = "";
         foreach (var className in classNames)
         {
-            tablesContent += $"            tables.Add((int)ProtocolType.{className}, typeof({className}));\n";
+            //tablesContent += $"            tables.Add((int)ProtocolType.{className}, typeof({className}));\n";
+            tablesContent += $"            controllers.Add(nameof({className}), new {className}());\n";
         }
 
-        var fileContent = $@"using JFramework;
-using System;
-using System.Collections.Generic;
+        var fileContent = $@"using JFramework.Unity;
+
 
 namespace Game
 {{
-    public class AutoNetMessageRegister : ITypeRegister
+    public class {viewOutputFileName} : BaseControllerManager
     {{
-        public Dictionary<int, Type> GetTypes()
+        public override void RegisterControllers()
         {{
-            var tables = new Dictionary<int, Type>();
-{tablesContent}            return tables;
+            
+{tablesContent}            
         }}
     }}
 }}
 ";
-        var filePath = Path.Combine(outputDir, outputFileName);
+        var filePath = Path.Combine(outputDir, viewOutputFileName + ".cs");
         File.WriteAllText(filePath, fileContent);
 
         AssetDatabase.Refresh();

@@ -4,17 +4,17 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
-public class MVCRegisterGenerator : EditorWindow
+public class ProtocolRegisterGenerator : EditorWindow
 {
-    private string controllerSourceDir = "Assets/Downloads/HotfixScripts/Logic/Controller";
-    private string controllerOutputDir = "Assets/Downloads/HotfixScripts/AutoGen";
-    private string controllerOutputFileName = "GameControllerManager";
+    private string sourceDir = "Assets/Downloads/HotfixScripts/Protocol/SocketMessages";
+    private string outputDir = "Assets/Downloads/HotfixScripts/AutoGen/Protocol";
+    private string outputFileName = "AutoNetMessageRegister.cs";
     private Vector2 scrollPos;
 
-    [MenuItem("JFrameworkTools/生成Controllers注册文件")]
+    [MenuItem("JFrameworkTools/生成Protocol注册文件")]
     public static void ShowWindow()
     {
-        var window = GetWindow<MVCRegisterGenerator>("MVC注册生成器");
+        var window = GetWindow<ProtocolRegisterGenerator>("Protocol注册生成器");
         window.minSize = new Vector2(500, 200);
     }
 
@@ -22,20 +22,20 @@ public class MVCRegisterGenerator : EditorWindow
     {
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
-        GUILayout.Label("MVC注册文件生成器", EditorStyles.boldLabel);
-        controllerSourceDir = EditorGUILayout.TextField("源目录", controllerSourceDir);
-        controllerOutputDir = EditorGUILayout.TextField("输出目录", controllerOutputDir);
+        GUILayout.Label("Protocol注册文件生成器", EditorStyles.boldLabel);
+        sourceDir = EditorGUILayout.TextField("源目录", sourceDir);
+        outputDir = EditorGUILayout.TextField("输出目录", outputDir);
 
         GUILayout.Space(10);
         if (GUILayout.Button("生成注册文件"))
         {
-            GenerateRegisterFile(controllerSourceDir, controllerOutputDir, controllerOutputFileName);
+            GenerateRegisterFile();
         }
 
         EditorGUILayout.EndScrollView();
     }
 
-    private void GenerateRegisterFile(string sourceDir, string outputDir, string viewOutputFileName)
+    private void GenerateRegisterFile()
     {
         if (!Directory.Exists(sourceDir))
         {
@@ -67,26 +67,26 @@ public class MVCRegisterGenerator : EditorWindow
         var tablesContent = "";
         foreach (var className in classNames)
         {
-            //tablesContent += $"            tables.Add((int)ProtocolType.{className}, typeof({className}));\n";
-            tablesContent += $"            controllers.Add(nameof({className}), new {className}());\n";
+            tablesContent += $"            tables.Add((int)ProtocolType.{className}, typeof({className}));\n";
         }
 
-        var fileContent = $@"using JFramework.Unity;
-
+        var fileContent = $@"using JFramework;
+using System;
+using System.Collections.Generic;
 
 namespace Game
 {{
-    public class {viewOutputFileName} : BaseControllerManager
+    public class AutoNetMessageRegister : ITypeRegister
     {{
-        public override void RegisterControllers()
+        public Dictionary<int, Type> GetTypes()
         {{
-            
-{tablesContent}            
+            var tables = new Dictionary<int, Type>();
+{tablesContent}            return tables;
         }}
     }}
 }}
 ";
-        var filePath = Path.Combine(outputDir, viewOutputFileName + ".cs");
+        var filePath = Path.Combine(outputDir, outputFileName);
         File.WriteAllText(filePath, fileContent);
 
         AssetDatabase.Refresh();
