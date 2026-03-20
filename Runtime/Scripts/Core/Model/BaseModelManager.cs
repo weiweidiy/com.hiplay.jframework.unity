@@ -11,7 +11,7 @@ namespace JFramework.Unity
         public abstract void RegisterModels();
         public T GetModel<T>(/*string key*/) where T : class
         {
-            var key = nameof(T);
+            var key = typeof(T).Name;
             if (models.TryGetValue(key, out var model))
             {
                 return model as T;
