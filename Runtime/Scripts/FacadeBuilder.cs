@@ -1,4 +1,5 @@
-﻿using JFramework.Game;
+﻿using Game.Common;
+using JFramework.Game;
 using UnityEngine;
 
 namespace JFramework.Unity
@@ -43,21 +44,7 @@ namespace JFramework.Unity
 
         ITransitionProvider transitionProvider;
 
-        //ISocketFactory socketFactory;
-
-        //IJSocket socket;
-
-        //INetworkMessageProcessStrate networkMessageProcessStrate;
-
-        //INetMessageSerializerStrate netMessageSerializerStrate;
-
-        //IMessageTypeResolver messageTypeResolver;
-
-        //ITypeRegister protocolRegister;
-
-        //JDataProcesserManager outProcesserManager;
-
-        //JDataProcesserManager comingProcesserManager;
+        IGameAudioManager gameAudioManager;
 
         BaseNetworkMessageHandler networkMessageHandler;
 
@@ -115,6 +102,11 @@ namespace JFramework.Unity
                 throw new System.Exception("ControllerManager is required but not set in FacadeBuilder!");
             }
 
+            if (gameAudioManager == null)
+            {
+                gameAudioManager = new DefaultAudioManager(assetsLoader);
+            }
+
             if (dataConverter == null)
             {
                 dataConverter = new JDataConverter();
@@ -161,7 +153,7 @@ namespace JFramework.Unity
                 transitionProvider = new SMTransitionProvider(assetsLoader);
             }
 
-           
+
             if (networkManager == null && networkBuilder != null)
             {
                 networkBuilder.SetDataConverter(dataConverter);
@@ -171,14 +163,14 @@ namespace JFramework.Unity
 
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
                     , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager, spriteManager, gameAssetsQuary
-                    , transitionProvider);
+                    , transitionProvider, gameAudioManager);
 
             if (networkMessageHandler != null)
             {
                 networkMessageHandler.Facade = facade;
             }
 
-            if(modelManager != null)
+            if (modelManager != null)
             {
                 modelManager.Facade = facade;
             }
@@ -402,8 +394,21 @@ namespace JFramework.Unity
             return this;
         }
 
+        public FacadeBuilder SetTaskCompletionSourceManager(IJTaskCompletionSourceManager<IUnique> taskManager)
+        {
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.SetTaskManager(taskManager);
+            //this.taskManager = taskManager;
+            return this;
+        }
 
-
-
+        public FacadeBuilder SetGameAudioManager(IGameAudioManager gameAudioManager)
+        {
+            this.gameAudioManager = gameAudioManager;
+            return this;
+        }
     }
 }

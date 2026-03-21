@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using Game.Common;
 using JFramework.Game;
 using System;
 using System.Collections.Generic;
@@ -89,11 +90,16 @@ namespace JFramework.Unity
         /// </summary>
         ITransitionProvider transitionProvider;
 
+        /// <summary>
+        /// 声音管理器
+        /// </summary>
+        IGameAudioManager gameAudioManager;
+
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
             , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
             , IModelManager modelManager, IViewManager viewControllerContainer, IControllerManager controllerManager
             , IHttpRequest httpRequest, IJConfigManager configManager, ISpriteManager spriteManager, IGameAssetsQuary gameAssetsQuary
-            ,ITransitionProvider transitionProvider)
+            ,ITransitionProvider transitionProvider, IGameAudioManager gameAudioManager)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -114,6 +120,7 @@ namespace JFramework.Unity
             if(this.gameAssetsQuary != null)
                 this.gameAssetsQuary.SetFacade(this);
             this.transitionProvider = transitionProvider;
+            this.gameAudioManager = gameAudioManager;
         }
 
         /// <summary>
@@ -169,6 +176,8 @@ namespace JFramework.Unity
         public IJNetwork GetNetworkManager() => networkManager;
 
         public GameContext GetGameContext() => context;
+
+        public IGameAudioManager GetGameAudioManager() => gameAudioManager;
 
         public async UniTask<ITransition> TransitonOut(string transitionType)
         {

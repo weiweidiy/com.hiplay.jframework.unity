@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using Game.Common;
 using JFramework.Game;
 
 namespace JFramework.Unity
@@ -38,5 +39,7 @@ namespace JFramework.Unity
         IJNetwork GetNetworkManager();
 
         GameContext GetGameContext();
+
+        IGameAudioManager GetGameAudioManager();
     }
 }
