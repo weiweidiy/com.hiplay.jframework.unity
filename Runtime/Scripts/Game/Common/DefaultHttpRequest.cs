@@ -8,8 +8,13 @@ using UnityEngine.Networking;
 
 namespace JFramework.Unity
 {
-    public class CustomCertificateHandler : CertificateHandler
+    public class CustomCertificateHandler : CertificateHandler , ICloneable
     {
+        public virtual object Clone()
+        {
+            return new CustomCertificateHandler();
+        }
+
         protected override bool ValidateCertificate(byte[] certificateData)
         {
             // 这里可以添加自定义的证书验证逻辑，或者直接返回true来接受所有证书
@@ -107,7 +112,7 @@ namespace JFramework.Unity
 
             using (UnityWebRequest webRequest = UnityWebRequest.Post(url, form))
             {
-                webRequest.certificateHandler = customCertificateHandler;
+                webRequest.certificateHandler = customCertificateHandler.Clone() as CertificateHandler;
                 SetupRequest(webRequest);
                 await SendRequest(webRequest);
                 return webRequest.downloadHandler.data;
@@ -118,7 +123,7 @@ namespace JFramework.Unity
         {
             using (UnityWebRequest webRequest = new UnityWebRequest(url, "POST"))
             {
-                webRequest.certificateHandler = customCertificateHandler;
+                webRequest.certificateHandler = customCertificateHandler.Clone() as CertificateHandler;
                 if (!string.IsNullOrEmpty(content))
                 {
                     byte[] bodyRaw = (encoding ?? Encoding.UTF8).GetBytes(content);
