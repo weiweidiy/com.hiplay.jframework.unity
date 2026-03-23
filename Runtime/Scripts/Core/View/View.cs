@@ -12,7 +12,7 @@ namespace JFramework.Unity
     {
         public string Name => this.GetType().Name;
 
-        GameContext context;
+        protected GameContext context;
 
         /// <summary>
         /// 在state onenter中被调用，注册事件监听
@@ -39,10 +39,10 @@ namespace JFramework.Unity
 
         public abstract void Refresh<TArg>(TArg args) where TArg : ViewData;
 
-        protected EventManager GetEventManager() => context.Facade.GetEventManager();
+        protected virtual EventManager GetEventManager() => context.Facade.GetEventManager();
 
-        protected IJUIManager GetUIManager() => context.Facade.GetUIManager();
+        protected virtual IJUIManager GetUIManager() => context.Facade.GetUIManager();
 
-        protected IGameObjectManager GetGameObjectManager() => context.Facade.GetGameObjectManager();
+        protected virtual IGameObjectManager GetGameObjectManager() => context.Facade.GetGameObjectManager();
     }
 }
