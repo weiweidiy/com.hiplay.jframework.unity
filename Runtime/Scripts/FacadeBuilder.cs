@@ -55,6 +55,19 @@ namespace JFramework.Unity
             networkBuilder = useSocket ? new JNetworkBuilder() : null;
         }
 
+        /// <summary>
+        /// 是否使用网络任务管理器，适用于需要等待响应的通信方式，比如websocket，开启后会在发送消息时，创建一个任务，并等待这个任务完成或者超时，任务完成的时机是在收到响应消息的时候，调用tcs.TrySetResult(message)来完成任务
+        /// </summary>
+        /// <param name="useTaskManager"></param>
+        public void UseTaskManager(bool useTaskManager)
+        {
+            if (networkBuilder == null)
+            {
+                UseNetworkSocket(true);
+            }
+            networkBuilder.UseNetworkTaskManager(useTaskManager);
+        }
+
         public JFacade Build()
         {
             if (assetsLoader == null)
@@ -158,7 +171,7 @@ namespace JFramework.Unity
             {
                 networkBuilder.SetDataConverter(dataConverter);
                 networkManager = networkBuilder.Build();
-                //networkManager = new JNetwork(socketFactory, new JTaskCompletionSourceManager<IUnique>(), networkMessageProcessStrate, networkMessageHandler);
+                
             }
 
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
