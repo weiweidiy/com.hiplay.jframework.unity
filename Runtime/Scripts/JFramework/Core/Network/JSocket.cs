@@ -128,7 +128,7 @@ namespace JFramework
             }
         }
 
-        public override async Task<T> Send<T>(byte[] data)
+        public override async Task<TResponse> Send<TResponse>(byte[] data)
         {
             // 发送数据
             await Send(data);
@@ -149,18 +149,18 @@ namespace JFramework
                     try
                     {
                         // 尝试反序列化为T
-                        return (T)Convert.ChangeType(responseStr, typeof(T));
+                        return (TResponse)Convert.ChangeType(responseStr, typeof(TResponse));
                     }
                     catch
                     {
                         // 如果T不是string，建议用Json反序列化
                         try
                         {
-                            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(responseStr);
+                            return Newtonsoft.Json.JsonConvert.DeserializeObject<TResponse>(responseStr);
                         }
                         catch
                         {
-                            OnError(this, "Response cannot be converted to type " + typeof(T).Name);
+                            OnError(this, "Response cannot be converted to type " + typeof(TResponse).Name);
                         }
                     }
                 }
@@ -177,10 +177,10 @@ namespace JFramework
             return Send(data);
         }
 
-        public override async Task<T> Send<T>(string message)
+        public override async Task<TResponse> Send<TResponse>(string message)
         {
             var data = System.Text.Encoding.UTF8.GetBytes(message);
-            return await Send<T>(data);
+            return await Send<TResponse>(data);
         }
     }
 }

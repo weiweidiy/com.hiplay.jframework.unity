@@ -20,10 +20,10 @@ namespace JFramework
 
         Task Send(byte[] data);
 
-        Task<T> Send<T>(byte[] data);
+        Task<TResponse> Send<TResponse>(byte[] data);
 
         Task Send(string message);
 
-        Task<T> Send<T>(string message);
+        Task<TResponse> Send<TResponse>(string message);
     }
 }
