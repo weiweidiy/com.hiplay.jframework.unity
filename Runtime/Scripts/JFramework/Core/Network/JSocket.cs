@@ -93,5 +93,25 @@ namespace JFramework
             var response = await Send(data);
             return response != null ? Encoding.UTF8.GetString(response) : null;
         }
+
+        public override Task RPC(string method, byte[] param = null, TimeSpan? timeout = null)
+        {
+            throw new NotImplementedException("没有实现RPC调用");
+        }
+
+        public override Task<TResponse> RPC<TResponse>(string method, byte[] param = null, TimeSpan? timeout = null)
+        {
+            throw new NotImplementedException("没有实现RPC调用");
+        }
+
+        public override Task RPC(string method, string param = null, TimeSpan? timeout = null)
+        {
+            throw new NotImplementedException("没有实现RPC调用");
+        }
+
+        public override Task<TResponse> RPC<TResponse>(string method, string param = null, TimeSpan? timeout = null)
+        {
+            throw new NotImplementedException("没有实现RPC调用");
+        }
     }
 }

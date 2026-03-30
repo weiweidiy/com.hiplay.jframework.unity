@@ -18,8 +18,28 @@ namespace JFramework
         void Open();
         void Close();
 
+        /// <summary>
+        /// 普通发送数据，等待服务器返回响应数据（需要有uid标识请求和响应的对应关系）
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         Task<byte[]> Send(byte[] data);
 
         Task<string> Send(string message);
+
+        /// <summary>
+        /// RPC调用，发送一个方法名和参数，等待服务器返回结果
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="param"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        Task RPC(string method, byte[] param = null, TimeSpan? timeout = null);
+
+        Task<TResponse> RPC<TResponse>(string method, byte[] param = null, TimeSpan? timeout = null);
+
+        Task RPC(string method, string param = null, TimeSpan? timeout = null);
+
+        Task<TResponse> RPC<TResponse>(string method, string param = null, TimeSpan? timeout = null);
     }
 }

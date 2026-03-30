@@ -12,6 +12,12 @@ using System.Threading.Tasks;
 
 namespace JFramework
 {
+    public enum NetworkProtocolType
+    {
+        String,
+        ByteArray
+    }
+
     public interface ISocketFactory
     {
         IJSocket Create();
@@ -51,6 +57,16 @@ namespace JFramework
         /// 消息处理器，处理业务逻辑
         /// </summary>
         INetworkMessageHandler messageHandler = null;
+
+        /// <summary>
+        /// 协议类型，默认byte数组，可以选择string，底层socket会根据协议类型来处理消息的发送和接收，string协议适合文本消息，byte数组适合二进制消息，比如protobuf等
+        /// </summary>
+        private NetworkProtocolType protocolType = NetworkProtocolType.ByteArray;
+        public NetworkProtocolType ProtocolType
+        {
+            get => protocolType;
+            set => protocolType = value;
+        }
 
 
         #region 公开接口
@@ -125,6 +141,54 @@ namespace JFramework
         }
 
         /// <summary>
+        /// RPC调用，发送消息，等待响应，适合signalR这种需要等待响应的通信方式，发送消息的时候，可以等待这个任务完成，拿到响应结果，或者超时
+        /// </summary>
+        /// <typeparam name="TResponse"></typeparam>
+        /// <param name="method"></param>
+        /// <param name="param"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<TResponse> RPC<TResponse>(string method, IJNetMessage param, TimeSpan? timeout) where TResponse : class, IJNetMessage
+        {
+            var socket = GetSocket();
+            if (socket == null || !socket.IsOpen)
+                throw new Exception("Socket is not open.");
+
+            byte[] byteMsg = null;
+            if (param != null)
+            {
+                byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(param);
+            }
+
+            // 调用底层 socket 的泛型 RPC 方法（byte[]  版本）
+            return await socket.RPC<TResponse>(method, byteMsg, timeout);
+        }
+
+        /// <summary>
+        /// RPC调用，没有返回值
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="param"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        public async Task RPC(string method, IJNetMessage param = null, TimeSpan? timeout = null)
+        {
+            var socket = GetSocket();
+            if (socket == null || !socket.IsOpen)
+                throw new Exception("Socket is not open.");
+
+            byte[] byteMsg = null;
+            if (param != null)
+            {
+                byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(param);
+            }
+
+            // 调用底层 socket 的 RPC 方法（byte[] 版本）
+            await socket.RPC(method, byteMsg, timeout);
+        }
+
+        /// <summary>
         /// 发送消息， RPC风格调用， 如果像protobuf这种无法实现接口的，可以自己定义个适配器，实现iunique接口即可
         /// </summary>
         /// <typeparam name="TResponse"></typeparam>
@@ -149,30 +213,61 @@ namespace JFramework
                     throw new Exception("Duplicate UID detected.");
             }
 
-
+            //处理消息
+            var byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(pMsg);
+            var strMsg = Encoding.UTF8.GetString(byteMsg);
             try
             {
-                //等待任务完成或者超时
+                //手动管理消息任务，依赖msg的uid，可以异步等待答复
                 if (taskManager != null)
                 {
+                    
+                    switch (protocolType)
+                    {
+                        case NetworkProtocolType.String:
+                            await socket.Send(strMsg);
+                            break;
+                        case NetworkProtocolType.ByteArray:
+                            await socket.Send(byteMsg);
+                            break;
+                        default:
+                            throw new Exception("Unsupported protocol type." + protocolType);
+                    }
+
                     var result = await taskManager.WaitingTask(pMsg.Uid, timeout); //可能超时
                     return result as TResponse; // 等待直到 OnWebSocketMessage 调用 TrySetResult
                 }
-                else
+                else //自动管理消息，不需要uid
                 {
-                    //处理消息
-                    var byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(pMsg);
+                   IJNetMessage response = null;
                     //发送
-                    var response = await socket.Send(byteMsg);
-
-                    var message = GetNetworkMessageProcessStrate().ProcessComingMessage(response);
-
-                    return message as TResponse;
+                    switch (protocolType)
+                    {
+                        case NetworkProtocolType.String:
+                            {
+                                var resStr = await socket.Send(strMsg);
+                                var resBytes = Encoding.UTF8.GetBytes(resStr);
+                                response = GetNetworkMessageProcessStrate().ProcessComingMessage(resBytes);
+                            }
+                            
+                            break;
+                        case NetworkProtocolType.ByteArray:
+                            {
+                                var resBytes = await socket.Send(byteMsg);
+                                response = GetNetworkMessageProcessStrate().ProcessComingMessage(resBytes);
+                            }
+                            
+                            break;
+                        default:
+                            throw new Exception("Unsupported protocol type." + protocolType);
+                    }
+                    
+                    return response as TResponse;
                 }
             }
             catch (Exception ex)
             {
-                if(tcs != null)
+                if (tcs != null)
                 {
                     if (!tcs.Task.IsCompleted)
                     {
@@ -186,11 +281,11 @@ namespace JFramework
             }
             finally
             {
-                if(taskManager!=null)
+                if (taskManager != null)
                 {
                     var result = GetTaskManager().RemoveTask(pMsg.Uid);
                 }
-                 
+
             }
 
         }
@@ -307,7 +402,7 @@ namespace JFramework
 
 
 
-        public JNetwork(ISocketFactory socketFactory,  INetworkMessageProcessStrate messageProcessStrate, INetworkMessageHandler messageHandler)
+        public JNetwork(ISocketFactory socketFactory, INetworkMessageProcessStrate messageProcessStrate, INetworkMessageHandler messageHandler)
         {
             this.socketFactory = socketFactory;
             //this.taskManager = taskManager;

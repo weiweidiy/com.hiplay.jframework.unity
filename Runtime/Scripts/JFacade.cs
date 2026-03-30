@@ -333,7 +333,17 @@ namespace JFramework.Unity
             networkManager.Disconnect();
         }
 
-  
+
+        public Task<TResponse> RPC<TResponse>(string method, IJNetMessage param, TimeSpan? timeout) where TResponse : class, IJNetMessage
+        {
+            return networkManager.RPC<TResponse>(method, param, timeout);
+        }
+
+        public Task RPC(string method, IJNetMessage param = null, TimeSpan? timeout = null)
+        {
+            return networkManager.RPC(method, param, timeout);
+        }
+
 
 
 
