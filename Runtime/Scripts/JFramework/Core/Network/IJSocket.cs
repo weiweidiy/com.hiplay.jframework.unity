@@ -18,12 +18,8 @@ namespace JFramework
         void Open();
         void Close();
 
-        Task Send(byte[] data);
+        Task<byte[]> Send(byte[] data);
 
-        Task<TResponse> Send<TResponse>(byte[] data);
-
-        Task Send(string message);
-
-        Task<TResponse> Send<TResponse>(string message);
+        Task<string> Send(string message);
     }
 }

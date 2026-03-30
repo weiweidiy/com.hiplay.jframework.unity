@@ -152,11 +152,6 @@ namespace JFramework
 
             try
             {
-                //处理消息
-                var byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(pMsg);
-                //发送
-                var response = await socket.Send<TResponse>(byteMsg);
-
                 //等待任务完成或者超时
                 if (taskManager != null)
                 {
@@ -164,9 +159,16 @@ namespace JFramework
                     return result as TResponse; // 等待直到 OnWebSocketMessage 调用 TrySetResult
                 }
                 else
-                    return response;
+                {
+                    //处理消息
+                    var byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(pMsg);
+                    //发送
+                    var response = await socket.Send(byteMsg);
 
+                    var message = GetNetworkMessageProcessStrate().ProcessComingMessage(response);
 
+                    return message as TResponse;
+                }
             }
             catch (Exception ex)
             {

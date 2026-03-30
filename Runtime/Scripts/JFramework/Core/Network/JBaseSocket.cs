@@ -43,13 +43,11 @@ namespace JFramework
             return util.DeepClone(this, true);
         }
 
-        public abstract Task Send(byte[] data);
 
-        public abstract Task<TResponse> Send<TResponse>(byte[] data);
+        public abstract Task<byte[]> Send(byte[] data);
 
-        public abstract Task Send(string message);
 
-        public abstract Task<TResponse> Send<TResponse>(string message);
+        public abstract Task<string> Send(string message);
     }
 }
 
