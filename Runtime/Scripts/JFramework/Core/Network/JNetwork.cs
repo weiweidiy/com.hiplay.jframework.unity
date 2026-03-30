@@ -311,12 +311,16 @@ namespace JFramework
 
             try
             {
-                //如果没有tcs，那可能是一个推送消息
-                var tcs = GetTaskManager().GetTask(message.Uid);
-                if (tcs != null)
+                if(taskManager != null)
                 {
-                    tcs.TrySetResult(message); // 完成等待的任务
+                    //如果没有tcs，那可能是一个推送消息
+                    var tcs = taskManager.GetTask(message.Uid);
+                    if (tcs != null)
+                    {
+                        tcs.TrySetResult(message); // 完成等待的任务
+                    }
                 }
+  
             }
             catch (Exception ex)
             {
