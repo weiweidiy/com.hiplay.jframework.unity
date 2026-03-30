@@ -32,9 +32,9 @@ namespace JFramework
 
         Task<TResponse> SendMessage<TResponse>(IJNetMessage pMsg, TimeSpan? timeout = null) where TResponse : class, IJNetMessage;
 
-        Task<TResponse> RPC<TResponse>(string method, IJNetMessage param = null, TimeSpan? timeout = null) where TResponse : class, IJNetMessage;
+        Task<TResponse> RPC<TResponse>(string method, object param = null, TimeSpan? timeout = null);
 
-        Task RPC(string method, IJNetMessage param = null, TimeSpan? timeout = null);
+        Task RPCVoid(string method, object param = null, TimeSpan? timeout = null);
 
         bool IsConnecting();
 

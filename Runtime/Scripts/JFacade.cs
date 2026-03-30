@@ -334,14 +334,14 @@ namespace JFramework.Unity
         }
 
 
-        public Task<TResponse> RPC<TResponse>(string method, IJNetMessage param, TimeSpan? timeout) where TResponse : class, IJNetMessage
+        public Task<TResponse> RPC<TResponse>(string method, object param, TimeSpan? timeout) 
         {
             return networkManager.RPC<TResponse>(method, param, timeout);
         }
 
-        public Task RPC(string method, IJNetMessage param = null, TimeSpan? timeout = null)
+        public Task RPCVoid(string method, object param = null, TimeSpan? timeout = null)
         {
-            return networkManager.RPC(method, param, timeout);
+            return networkManager.RPCVoid(method, param, timeout);
         }
 
 

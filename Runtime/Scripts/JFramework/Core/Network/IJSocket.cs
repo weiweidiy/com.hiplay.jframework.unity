@@ -34,12 +34,8 @@ namespace JFramework
         /// <param name="param"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        Task RPC(string method, byte[] param = null, TimeSpan? timeout = null);
+        Task RPCVoid(string method, object param = null, TimeSpan? timeout = null);
 
-        Task<TResponse> RPC<TResponse>(string method, byte[] param = null, TimeSpan? timeout = null);
-
-        Task RPC(string method, string param = null, TimeSpan? timeout = null);
-
-        Task<TResponse> RPC<TResponse>(string method, string param = null, TimeSpan? timeout = null);
+        Task<TResponse> RPC<TResponse>(string method, object param = null, TimeSpan? timeout = null);
     }
 }

@@ -48,13 +48,13 @@ namespace JFramework
 
         public abstract Task<string> Send(string message);
 
-        public abstract Task RPC(string method, byte[] param = null, TimeSpan? timeout = null);
+        public abstract Task RPCVoid(string method, object param = null, TimeSpan? timeout = null);
 
-        public abstract Task<TResponse> RPC<TResponse>(string method, byte[] param = null, TimeSpan? timeout = null);
+        public abstract Task<TResponse> RPC<TResponse>(string method, object param = null, TimeSpan? timeout = null);
 
-        public abstract Task RPC(string method, string param = null, TimeSpan? timeout = null);
+        //public abstract Task RPCVoid(string method, string param = null, TimeSpan? timeout = null);
 
-        public abstract Task<TResponse> RPC<TResponse>(string method, string param = null, TimeSpan? timeout = null);
+        //public abstract Task<string> RPC(string method, string param = null, TimeSpan? timeout = null);
     }
 }
 

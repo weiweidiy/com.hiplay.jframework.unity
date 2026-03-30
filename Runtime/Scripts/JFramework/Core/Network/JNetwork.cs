@@ -74,6 +74,7 @@ namespace JFramework
         /// <summary>
         /// 会在发送消息时，创建一个任务，并等待这个任务完成或者超时，任务完成的时机是在收到响应消息的时候，调用tcs.TrySetResult(message)来完成任务
         /// 适合websocket这种需要等待响应的通信方式，发送消息的时候，可以等待这个任务完成，拿到响应结果，或者超时
+        /// 这个功能，需要在发送消息的时候，确保消息对象实现了IUnique接口，并且有一个唯一的Uid属性，这个Uid会被用来关联请求和响应，在收到响应消息的时候，根据Uid找到对应的任务，并完成它
         /// </summary>
         /// <param name="taskManager"></param>
         public void UseTaskManager(IJTaskCompletionSourceManager<IUnique> taskManager)
@@ -149,20 +150,19 @@ namespace JFramework
         /// <param name="timeout"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public async Task<TResponse> RPC<TResponse>(string method, IJNetMessage param, TimeSpan? timeout) where TResponse : class, IJNetMessage
+        public async Task<TResponse> RPC<TResponse>(string method, object param, TimeSpan? timeout)
         {
             var socket = GetSocket();
             if (socket == null || !socket.IsOpen)
                 throw new Exception("Socket is not open.");
 
-            byte[] byteMsg = null;
-            if (param != null)
-            {
-                byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(param);
-            }
+            //byte[] byteMsg = null;
+            //if (param != null)
+            //{
+            //    byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(param);
+            //}
 
-            // 调用底层 socket 的泛型 RPC 方法（byte[]  版本）
-            return await socket.RPC<TResponse>(method, byteMsg, timeout);
+            return await socket.RPC<TResponse>(method, param, timeout);
         }
 
         /// <summary>
@@ -172,20 +172,20 @@ namespace JFramework
         /// <param name="param"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public async Task RPC(string method, IJNetMessage param = null, TimeSpan? timeout = null)
+        public async Task RPCVoid(string method, object param = null, TimeSpan? timeout = null)
         {
             var socket = GetSocket();
             if (socket == null || !socket.IsOpen)
                 throw new Exception("Socket is not open.");
 
-            byte[] byteMsg = null;
-            if (param != null)
-            {
-                byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(param);
-            }
+            //byte[] byteMsg = null;
+            //if (param != null)
+            //{
+            //    byteMsg = GetNetworkMessageProcessStrate().ProcessOutMessage(param);
+            //}
 
-            // 调用底层 socket 的 RPC 方法（byte[] 版本）
-            await socket.RPC(method, byteMsg, timeout);
+            // 调用底层 socket 的 RPCVoid 方法（byte[] 版本）
+            await socket.RPCVoid(method, param, timeout);
         }
 
         /// <summary>
