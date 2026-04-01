@@ -41,5 +41,7 @@ namespace JFramework.Unity
         GameContext GetGameContext();
 
         IGameAudioManager GetGameAudioManager();
+
+        IGameDataStore GetGameDataStore();
     }
 }

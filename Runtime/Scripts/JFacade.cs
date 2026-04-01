@@ -95,11 +95,16 @@ namespace JFramework.Unity
         /// </summary>
         IGameAudioManager gameAudioManager;
 
+        /// <summary>
+        /// 游戏数据存储接口，提供游戏数据的持久化功能，允许在游戏中保存和加载玩家的进度、设置、统计数据等，提升游戏的可玩性和用户体验
+        /// </summary>
+        IGameDataStore gameDataStore;
+
         public JFacade(IJUIManager uiManager, IJNetwork networkManager, IAssetsLoader assetsLoader, EventManager eventManager
             , ISceneStateMachineAsync sm, string firstSceneState, GameContext context, IGameObjectManager gameObjectManager
             , IModelManager modelManager, IViewManager viewControllerContainer, IControllerManager controllerManager
             , IHttpRequest httpRequest, IJConfigManager configManager, ISpriteManager spriteManager, IGameAssetsQuary gameAssetsQuary
-            ,ITransitionProvider transitionProvider, IGameAudioManager gameAudioManager)
+            ,ITransitionProvider transitionProvider, IGameAudioManager gameAudioManager, IGameDataStore gameDataStore)
         {
             this.networkManager = networkManager;
             this.uiManager = uiManager;
@@ -121,6 +126,7 @@ namespace JFramework.Unity
                 this.gameAssetsQuary.SetFacade(this);
             this.transitionProvider = transitionProvider;
             this.gameAudioManager = gameAudioManager;
+            this.gameDataStore = gameDataStore;
         }
 
         /// <summary>
@@ -178,6 +184,8 @@ namespace JFramework.Unity
         public GameContext GetGameContext() => context;
 
         public IGameAudioManager GetGameAudioManager() => gameAudioManager;
+
+        public IGameDataStore GetGameDataStore() => gameDataStore;
 
         public async UniTask<ITransition> TransitonOut(string transitionType)
         {
@@ -343,6 +351,8 @@ namespace JFramework.Unity
         {
             return networkManager.RPCVoid(method, param, timeout);
         }
+
+ 
 
 
 

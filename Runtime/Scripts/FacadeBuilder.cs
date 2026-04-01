@@ -50,6 +50,10 @@ namespace JFramework.Unity
 
         JNetworkBuilder networkBuilder;
 
+        IGameDataStore gameDataStore;
+
+        IDataManager dataManager;
+
         public void UseNetworkSocket(bool useSocket)
         {
             networkBuilder = useSocket ? new JNetworkBuilder() : null;
@@ -72,7 +76,7 @@ namespace JFramework.Unity
         {
             if (assetsLoader == null)
             {
-                assetsLoader = new DefaultAssetsLoader();
+                assetsLoader = new UnityResourcesAssetsLoader();
             }
 
             if (uiManager == null)
@@ -127,12 +131,12 @@ namespace JFramework.Unity
 
             if (httpRequest == null)
             {
-                httpRequest = new DefaultHttpRequest(dataConverter, new CustomCertificateHandler());
+                httpRequest = new UnityWebRequestHttpRequest(dataConverter, new CustomCertificateHandler());
             }
 
             if (gameObjectPool == null)
             {
-                gameObjectPool = new DefaultGameObjectPool(assetsLoader);
+                gameObjectPool = new XPoolGameObjectPool(assetsLoader);
             }
 
             if (gameObjectManager == null)
@@ -174,9 +178,19 @@ namespace JFramework.Unity
                 
             }
 
+            if(dataManager == null)
+            {
+                dataManager = new UnityPlayerPrefsDataManager(dataConverter);
+            }
+
+            if (gameDataStore == null)
+            {
+                gameDataStore = new JDataStore(dataManager);
+            }
+
             var facade = new JFacade(uiManager, networkManager, assetsLoader, eventManager, sm, firstSceneState, context
                     , gameObjectManager, modelManager, viewControllerManager, controllerManager, httpRequest, configManager, spriteManager, gameAssetsQuary
-                    , transitionProvider, gameAudioManager);
+                    , transitionProvider, gameAudioManager, gameDataStore);
 
             if (networkMessageHandler != null)
             {
@@ -421,6 +435,18 @@ namespace JFramework.Unity
         public FacadeBuilder SetGameAudioManager(IGameAudioManager gameAudioManager)
         {
             this.gameAudioManager = gameAudioManager;
+            return this;
+        }
+
+        public FacadeBuilder SetGameDataStore(IGameDataStore gameDataStore)
+        {
+            this.gameDataStore = gameDataStore;
+            return this;
+        }
+
+        public FacadeBuilder SetDataManager(IDataManager dataManager)
+        {
+            this.dataManager = dataManager;
             return this;
         }
     }

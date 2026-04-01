@@ -9,7 +9,7 @@ namespace JFramework.Unity
     /// <summary>
     /// GameObject对象池
     /// </summary>
-    public class DefaultGameObjectPool : IGameObjectPool
+    public class XPoolGameObjectPool : IGameObjectPool
     {
         /// <summary>
         /// 缓存对象池
@@ -21,7 +21,7 @@ namespace JFramework.Unity
         /// </summary>
         IAssetsLoader assetsLoader;
 
-        public DefaultGameObjectPool(IAssetsLoader assetsLoader)
+        public XPoolGameObjectPool(IAssetsLoader assetsLoader)
         {
             this.assetsLoader = assetsLoader;
         }

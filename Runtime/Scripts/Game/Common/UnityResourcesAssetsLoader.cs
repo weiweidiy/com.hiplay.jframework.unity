@@ -5,7 +5,8 @@ using UnityEngine.SceneManagement;
 
 namespace JFramework.Unity
 {
-    public class DefaultAssetsLoader : IAssetsLoader
+    
+    public class UnityResourcesAssetsLoader : IAssetsLoader
     {
         public async Task<GameObject> InstantiateAsync(string location)
         {

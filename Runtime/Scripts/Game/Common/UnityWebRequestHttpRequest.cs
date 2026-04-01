@@ -40,14 +40,14 @@ namespace JFramework.Unity
         }
     }
 
-    public class DefaultHttpRequest : IHttpRequest
+    public class UnityWebRequestHttpRequest : IHttpRequest
     {
         private Dictionary<string, string> headers = new Dictionary<string, string>();
         private string contentType = "application/json";
         CustomCertificateHandler customCertificateHandler;
         IDataConverter dataConverter;
 
-        public DefaultHttpRequest(IDataConverter dataConverter, CustomCertificateHandler customCertificateHandler = null)
+        public UnityWebRequestHttpRequest(IDataConverter dataConverter, CustomCertificateHandler customCertificateHandler = null)
         {
             this.customCertificateHandler = customCertificateHandler;
             this.dataConverter = dataConverter;

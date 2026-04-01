@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace JFramework
@@ -137,14 +138,18 @@ namespace JFramework
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetAllKeysAsync()
         {
-            // 获取所有持久化存储的键
-            //var persistentKeys = await _reader.GetAllKeysAsync();
+            // 先从持久化存储获取所有键
+            IEnumerable<string> persistentKeys = Array.Empty<string>();
+            if (dataManager is IGameDataStore persistentStore)
+            {
+                persistentKeys = await persistentStore.GetAllKeysAsync();
+            }
 
-            // 合并内存缓存的键
+            // 再从内存缓存获取所有键
             var memoryKeys = _memoryCache.Keys;
 
-            // 返回合并后的唯一键集合
-            return memoryKeys; // persistentKeys.Union(memoryKeys).Distinct();
+            // 合并两者的键并去重
+            return persistentKeys.Union(memoryKeys).Distinct();
         }
 
         public void Dispose()
