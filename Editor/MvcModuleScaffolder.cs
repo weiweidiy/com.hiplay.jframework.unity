@@ -98,7 +98,7 @@ public sealed class MvcModuleScaffolder : EditorWindow
     public static void ShowWindow()
     {
         var window = GetWindow<MvcModuleScaffolder>("MVC代码生成器");
-        window.minSize = new Vector2(640f, 640f);
+        window.minSize = new Vector2(640f, 840f);
     }
 
     private void OnEnable()
@@ -183,10 +183,14 @@ public sealed class MvcModuleScaffolder : EditorWindow
     private void DrawCreateOptions()
     {
         EditorGUILayout.LabelField("生成内容", EditorStyles.boldLabel);
-        createController = EditorGUILayout.ToggleLeft("Controller", createController);
-        createModel = EditorGUILayout.ToggleLeft("Model", createModel);
-        createView = EditorGUILayout.ToggleLeft("View（含 Panel + ViewData）", createView);
-        createSceneState = EditorGUILayout.ToggleLeft("SceneState", createSceneState);
+
+        using (new EditorGUILayout.HorizontalScope())
+        {
+            createController = EditorGUILayout.ToggleLeft("Controller", createController, GUILayout.Width(100f));
+            createModel = EditorGUILayout.ToggleLeft("Model", createModel, GUILayout.Width(80f));
+            createView = EditorGUILayout.ToggleLeft("View（含 Panel + ViewData）", createView, GUILayout.Width(180f));
+            createSceneState = EditorGUILayout.ToggleLeft("SceneState", createSceneState, GUILayout.Width(100f));
+        }
     }
 
     private void DrawNameOptions()
