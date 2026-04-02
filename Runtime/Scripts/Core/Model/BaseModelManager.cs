@@ -7,7 +7,6 @@ namespace JFramework.Unity
     {
         protected Dictionary<string, object> models = new();
 
-        public IJFacade Facade { get; set; }
         public abstract void RegisterModels();
         public T GetModel<T>(/*string key*/) where T : class
         {

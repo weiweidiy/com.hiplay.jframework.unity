@@ -50,7 +50,7 @@ namespace deVoid.UIFramework {
         public bool SuppressPrefabProperties { get; set; }
 
         /// <summary>
-        /// Popups are displayed with a black background behind them and
+        /// Popups are displayed with a black sprite behind them and
         /// in front of all other Windows
         /// </summary>
         /// <value><c>true</c> if this window is a popup; otherwise, <c>false</c>.</value>

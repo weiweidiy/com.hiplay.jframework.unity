@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using System;
 
 namespace JFramework.Unity
 {
@@ -6,28 +7,37 @@ namespace JFramework.Unity
     /// 
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
-    public abstract class BaseStateAsync
+    public abstract class BaseStateAsync : ISceneState
     {
         /// <summary>
         /// 上下文
         /// </summary>
-        protected GameContext context;
+        protected ISceneContext sceneContext;
+
+        protected GameContext gameContext;
 
         /// <summary>
         /// 状态机名字
         /// </summary>
         public string Name => GetType().Name;
 
-        /// <summary>
-        /// 状态进入时调用
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public virtual UniTask OnEnter(GameContext context, object arg)
+
+        public virtual UniTask EnterAsync(ISceneContext sceneContext, object arg)
         {
-            this.context = context;
-            AddListeners();      
-            return OnEnter(arg); 
+
+            this.sceneContext = sceneContext;
+            gameContext = new GameContext
+            {
+                Services = sceneContext.Services
+            };
+            AddListeners();
+            return OnEnter(arg);
+        }
+
+        public virtual UniTask ExitAsync()
+        {
+            RemoveListeners();
+            return OnExit();
         }
 
         /// <summary>
@@ -42,9 +52,10 @@ namespace JFramework.Unity
         /// <returns></returns>
         public virtual UniTask OnExit()
         {
-            RemoveListeners();
             return UniTask.CompletedTask;
         }
+
+
 
         /// <summary>
         /// 事件监听器，在状态进入时调用，子类重写
@@ -52,7 +63,26 @@ namespace JFramework.Unity
         protected virtual void AddListeners() { }
         protected virtual void RemoveListeners() { }
 
-        protected IAssetsLoader GetAssetsLoader() => context.Facade.GetAssetsLoader();
-        protected IJUIManager GetUIManager() => context.Facade.GetUIManager();
+        protected IAssetsLoader GetAssetsLoader()
+        {
+            if (sceneContext?.Services != null &&
+                sceneContext.Services.TryResolve<IAssetsLoader>(out var assetsLoader))
+            {
+                return assetsLoader;
+            }
+
+            throw new InvalidOperationException("IAssetsLoader is not registered in IServiceRegistry.");
+        }
+
+        protected IJUIManager GetUIManager()
+        {
+            if (sceneContext?.Services != null &&
+                sceneContext.Services.TryResolve<IJUIManager>(out var uiManager))
+            {
+                return uiManager;
+            }
+
+            throw new InvalidOperationException("IJUIManager is not registered in IServiceRegistry.");
+        }
     }
 }

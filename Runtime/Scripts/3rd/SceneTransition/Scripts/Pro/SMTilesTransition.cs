@@ -14,7 +14,7 @@ namespace JFramework.Unity
 	{
 
 		/// <summary>
-		/// The background texture.
+		/// The sprite texture.
 		/// </summary>
 		public Texture backgroundTexture;
 

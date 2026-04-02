@@ -1,6 +1,7 @@
 ﻿
 using deVoid.UIFramework;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -30,6 +31,14 @@ namespace JFramework.Unity
         /// </summary>
         UISettings uiSettings;
 
+        class RuntimeScreenRegistration
+        {
+            public GameObject Instance;
+            public IUIScreenController Controller;
+        }
+
+        readonly Dictionary<string, RuntimeScreenRegistration> runtimeScreens = new Dictionary<string, RuntimeScreenRegistration>();
+
 
         public DefaultUIManager(IAssetsLoader assetsLoader)
         {
@@ -48,7 +57,17 @@ namespace JFramework.Unity
             {
                 uiSettings = await assetsLoader.LoadAssetAsync<UISettings>(uiSettingName);
                 uiFrame = uiSettings.CreateUIInstance();
-                Camera.main.GetUniversalAdditionalCameraData().cameraStack.Add(uiFrame.UICamera);
+                runtimeScreens.Clear();
+
+                var mainCamera = Camera.main;
+                if (mainCamera != null)
+                {
+                    var cameraData = mainCamera.GetUniversalAdditionalCameraData();
+                    if (cameraData != null && !cameraData.cameraStack.Contains(uiFrame.UICamera))
+                    {
+                        cameraData.cameraStack.Add(uiFrame.UICamera);
+                    }
+                }
             }
             catch
             {
@@ -63,7 +82,7 @@ namespace JFramework.Unity
         /// <param name="screenId"></param>
         /// <param name="controller"></param>
         /// <param name="screenTransform"></param>
-        string CreateScreenFromUISettings(string screenId)
+        RuntimeScreenRegistration CreateScreenFromUISettings(string screenId)
         {
             //需要新的实例
             var screen = GetScreenGameObjectPrefab(screenId);
@@ -82,10 +101,18 @@ namespace JFramework.Unity
                 {
                     screenInstance.SetActive(false);
                 }
-                return newScreenId;
+
+                var runtimeRegistration = new RuntimeScreenRegistration()
+                {
+                    Instance = screenInstance,
+                    Controller = screenController,
+                };
+                runtimeScreens[newScreenId] = runtimeRegistration;
+                return runtimeRegistration;
             }
             else
             {
+                GameObject.Destroy(screenInstance);
                 throw new System.Exception("[UIConfig] Screen doesn't contain a ScreenController! Skipping " + screen.name);
             }
         }
@@ -95,9 +122,8 @@ namespace JFramework.Unity
         {
             if (uiFrame.IsPanelOpen(screenId) && asNew)
             {
-                var newScreenId = CreateScreenFromUISettings(screenId);
-
-                return uiFrame.ShowPanel(newScreenId);
+                var runtimeRegistration = CreateScreenFromUISettings(screenId);
+                return uiFrame.ShowPanel(runtimeRegistration.Controller.ScreenId);
             }
             return uiFrame.ShowPanel(screenId);
         }
@@ -112,13 +138,11 @@ namespace JFramework.Unity
         {
             if (uiFrame.IsPanelOpen(screenId) && asNew)
             {
-                var newScreenId = CreateScreenFromUISettings(screenId);
-                return uiFrame.ShowPanel(newScreenId, properties);
-                //return newScreenId;
+                var runtimeRegistration = CreateScreenFromUISettings(screenId);
+                return uiFrame.ShowPanel(runtimeRegistration.Controller.ScreenId, properties);
             }
 
             return uiFrame.ShowPanel(screenId, properties);
-            //return screenId;
         }
 
 
@@ -133,7 +157,14 @@ namespace JFramework.Unity
         /// <param name="screenId"></param>
         public void DestroyPanel(string screenId)
         {
+            if (!runtimeScreens.TryGetValue(screenId, out var runtimeRegistration))
+            {
+                return;
+            }
 
+            uiFrame.UnregisterPanel(screenId, runtimeRegistration.Controller as IPanelController);
+            runtimeScreens.Remove(screenId);
+            GameObject.Destroy(runtimeRegistration.Instance);
         }
 
         /// <summary>
@@ -143,6 +174,7 @@ namespace JFramework.Unity
         public void HidePanel(string screenId)
         {
             uiFrame.HidePanel(screenId);
+            DestroyPanel(screenId);
         }
 
         //public void OpenWindow(string screenId)
@@ -157,17 +189,36 @@ namespace JFramework.Unity
 
         IWindowController IJUIManager.OpenWindow(string screenId)
         {
-            throw new NotImplementedException();
+            var runtimeRegistration = CreateScreenFromUISettings(screenId);
+            var controller = runtimeRegistration.Controller as IWindowController;
+            if (controller == null)
+            {
+                DestroyRuntimeScreen(runtimeRegistration.Controller.ScreenId);
+                throw new InvalidOperationException($"Screen {screenId} is not a window.");
+            }
+
+            uiFrame.OpenWindow(runtimeRegistration.Controller.ScreenId);
+            return controller;
         }
 
         IWindowController IJUIManager.OpenWindow<TArg>(string screenId, TArg properties)
         {
-            throw new NotImplementedException();
+            var runtimeRegistration = CreateScreenFromUISettings(screenId);
+            var controller = runtimeRegistration.Controller as IWindowController;
+            if (controller == null)
+            {
+                DestroyRuntimeScreen(runtimeRegistration.Controller.ScreenId);
+                throw new InvalidOperationException($"Screen {screenId} is not a window.");
+            }
+
+            uiFrame.OpenWindow(runtimeRegistration.Controller.ScreenId, properties);
+            return controller;
         }
 
         public void CloseWindow(string screenId)
         {
             uiFrame.CloseWindow(screenId);
+            DestroyRuntimeScreen(screenId);
         }
 
         /// <summary>
@@ -178,6 +229,26 @@ namespace JFramework.Unity
         GameObject GetScreenGameObjectPrefab(string screenId)
         {
             return uiSettings.screensToRegister.Where(i => i.name == screenId).SingleOrDefault();
+        }
+
+        void DestroyRuntimeScreen(string screenId)
+        {
+            if (!runtimeScreens.TryGetValue(screenId, out var runtimeRegistration))
+            {
+                return;
+            }
+
+            if (runtimeRegistration.Controller is IWindowController windowController)
+            {
+                uiFrame.UnregisterWindow(screenId, windowController);
+            }
+            else if (runtimeRegistration.Controller is IPanelController panelController)
+            {
+                uiFrame.UnregisterPanel(screenId, panelController);
+            }
+
+            runtimeScreens.Remove(screenId);
+            GameObject.Destroy(runtimeRegistration.Instance);
         }
 
         public Canvas GetUIFrameCanvas()

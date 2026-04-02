@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 ///游戏可以服用
 namespace JFramework.Unity
@@ -39,10 +40,37 @@ namespace JFramework.Unity
 
         public abstract void Refresh<TArg>(TArg args) where TArg : ViewData;
 
-        protected virtual EventManager GetEventManager() => context.Facade.GetEventManager();
+        protected virtual EventManager GetEventManager()
+        {
+            if (context?.Services != null &&
+                context.Services.TryResolve<EventManager>(out var eventManager))
+            {
+                return eventManager;
+            }
 
-        protected virtual IJUIManager GetUIManager() => context.Facade.GetUIManager();
+            throw new InvalidOperationException("EventManager is not registered in IServiceRegistry.");
+        }
 
-        protected virtual IGameObjectManager GetGameObjectManager() => context.Facade.GetGameObjectManager();
+        protected virtual IJUIManager GetUIManager()
+        {
+            if (context?.Services != null &&
+                context.Services.TryResolve<IJUIManager>(out var uiManager))
+            {
+                return uiManager;
+            }
+
+            throw new InvalidOperationException("IJUIManager is not registered in IServiceRegistry.");
+        }
+
+        protected virtual IGameObjectManager GetGameObjectManager()
+        {
+            if (context?.Services != null &&
+                context.Services.TryResolve<IGameObjectManager>(out var gameObjectManager))
+            {
+                return gameObjectManager;
+            }
+
+            throw new InvalidOperationException("IGameObjectManager is not registered in IServiceRegistry.");
+        }
     }
 }
