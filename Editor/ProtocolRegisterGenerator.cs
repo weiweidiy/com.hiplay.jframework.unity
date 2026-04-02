@@ -6,8 +6,14 @@ using System.Collections.Generic;
 
 public class ProtocolRegisterGenerator : EditorWindow
 {
-    private string sourceDir = "Assets/Downloads/HotfixScripts/Protocol/SocketMessages";
-    private string outputDir = "Assets/Downloads/HotfixScripts/AutoGen/Protocol";
+    private const string SourceDirPrefsKey = "ProtocolRegisterGenerator.SourceDir";
+    private const string OutputDirPrefsKey = "ProtocolRegisterGenerator.OutputDir";
+
+    private const string DefaultSourceDir = "Assets/Downloads/HotfixScripts/Protocol/SocketMessages";
+    private const string DefaultOutputDir = "Assets/Downloads/HotfixScripts/AutoGen/Protocol";
+
+    private string sourceDir = DefaultSourceDir;
+    private string outputDir = DefaultOutputDir;
     private string outputFileName = "AutoNetMessageRegister.cs";
     private Vector2 scrollPos;
 
@@ -18,13 +24,25 @@ public class ProtocolRegisterGenerator : EditorWindow
         window.minSize = new Vector2(500, 200);
     }
 
+    private void OnEnable()
+    {
+        sourceDir = EditorPrefs.GetString(SourceDirPrefsKey, DefaultSourceDir);
+        outputDir = EditorPrefs.GetString(OutputDirPrefsKey, DefaultOutputDir);
+    }
+
     private void OnGUI()
     {
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
         GUILayout.Label("Protocol注册文件生成器", EditorStyles.boldLabel);
+
+        EditorGUI.BeginChangeCheck();
         sourceDir = EditorGUILayout.TextField("源目录", sourceDir);
         outputDir = EditorGUILayout.TextField("输出目录", outputDir);
+        if (EditorGUI.EndChangeCheck())
+        {
+            SavePreferences();
+        }
 
         GUILayout.Space(10);
         if (GUILayout.Button("生成注册文件"))
@@ -35,6 +53,12 @@ public class ProtocolRegisterGenerator : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
+    private void SavePreferences()
+    {
+        EditorPrefs.SetString(SourceDirPrefsKey, sourceDir ?? string.Empty);
+        EditorPrefs.SetString(OutputDirPrefsKey, outputDir ?? string.Empty);
+    }
+
     private void GenerateRegisterFile()
     {
         if (!Directory.Exists(sourceDir))
@@ -42,6 +66,7 @@ public class ProtocolRegisterGenerator : EditorWindow
             EditorUtility.DisplayDialog("错误", "源目录不存在！", "确定");
             return;
         }
+
         if (!Directory.Exists(outputDir))
         {
             Directory.CreateDirectory(outputDir);
@@ -50,7 +75,6 @@ public class ProtocolRegisterGenerator : EditorWindow
         var csFiles = Directory.GetFiles(sourceDir, "*.cs", SearchOption.AllDirectories);
         var classNames = new HashSet<string>();
 
-        // 正则匹配类名（支持 partial/public/internal/class/interface/struct）
         var classRegex = new Regex(@"\b(class|struct|interface)\s+([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.Compiled);
 
         foreach (var file in csFiles)
@@ -63,7 +87,6 @@ public class ProtocolRegisterGenerator : EditorWindow
             }
         }
 
-        // 生成注册内容
         var tablesContent = "";
         foreach (var className in classNames)
         {
