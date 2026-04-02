@@ -8,47 +8,128 @@ namespace JFramework.Unity.EditorTools
 {
     public sealed class CreateJAppModuleTool : EditorWindow
     {
-        private const string DefaultRootFolder = "Assets/Scenes";
+        private const string DefaultRootFolder = "Assets/Downloads/HotfixScripts";
         private const string WindowTitle = "Create IJApp Module";
+        private const string ToolMenuPath = "JFrameworkTools/Create IJApp Module";
+        private const string AssetsMenuPath = "Assets/JFramework/Create IJApp Module";
 
-        private string moduleName = "NewModule";
+        private string moduleName = "MyModule";
         private string namespaceRoot = "Game";
-        private string targetFolder = DefaultRootFolder;
+        private string selectedFolder = DefaultRootFolder;
         private bool createEntry = true;
+        private bool createFoundationModule = true;
 
-        [MenuItem("Tools/JFramework/Create IJApp Module", false, 1)]
+        private bool createDefaultSceneState = true;
+        private string defaultSceneStateName = "SceneLoginState";
+        private string defaultSceneStateFolder = "SceneStates";
+
+        [MenuItem(ToolMenuPath, false, 1)]
         private static void OpenWindow()
         {
+            OpenWindowInternal(GetSelectedFolderOrDefault());
+        }
+
+        [MenuItem(AssetsMenuPath, false, 2000)]
+        private static void OpenWindowFromAssetsMenu()
+        {
+            OpenWindowInternal(GetSelectedFolderOrDefault());
+        }
+
+        [MenuItem(AssetsMenuPath, true)]
+        private static bool ValidateOpenWindowFromAssetsMenu()
+        {
+            return TryGetSelectedFolder(out _);
+        }
+
+        private static void OpenWindowInternal(string folder)
+        {
             var window = GetWindow<CreateJAppModuleTool>(true, WindowTitle);
-            window.minSize = new Vector2(460f, 220f);
-            window.targetFolder = GetSelectedFolderOrDefault();
+            window.minSize = new Vector2(520f, 260f);
+            window.selectedFolder = folder;
             window.Show();
         }
 
         private void OnGUI()
         {
-            EditorGUILayout.LabelField("Generate a complete IJApp module scaffold.", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("生成 IJApp 模块模板", EditorStyles.boldLabel);
             EditorGUILayout.Space();
 
-            moduleName = EditorGUILayout.TextField("Module Name", moduleName);
-            namespaceRoot = EditorGUILayout.TextField("Namespace Root", namespaceRoot);
-            targetFolder = EditorGUILayout.TextField("Target Folder", targetFolder);
-            createEntry = EditorGUILayout.Toggle("Create Entry", createEntry);
+            moduleName = EditorGUILayout.TextField("模块名", moduleName);
+            namespaceRoot = EditorGUILayout.TextField("命名空间根", namespaceRoot);
+
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.TextField("创建位置", selectedFolder);
+            }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("生成内容", EditorStyles.boldLabel);
+            createEntry = EditorGUILayout.Toggle("创建入口脚本", createEntry);
+            createFoundationModule = EditorGUILayout.Toggle("创建基础模块", createFoundationModule);
+            createDefaultSceneState = EditorGUILayout.Toggle("创建默认SceneState", createDefaultSceneState);
+
+            using (new EditorGUI.DisabledScope(!createDefaultSceneState))
+            {
+                defaultSceneStateName = EditorGUILayout.TextField("默认SceneState名", defaultSceneStateName);
+                defaultSceneStateFolder = EditorGUILayout.TextField("SceneState目录", defaultSceneStateFolder);
+            }
 
             EditorGUILayout.Space();
             EditorGUILayout.HelpBox(
-                "This will create GameModule, RegistryModule, PresentationModule, RuntimeModule, a sample State/View/Controller/Model, and README.",
+                "将在当前选中的文件夹下，以模块名创建新目录，并自动生成 Modules、GameEntry、GameFoundationModule，以及 Model/View/Controller/Scene/Initializer 五个基础模块模板。可选生成首个 SceneState 文件到指定目录。",
                 MessageType.Info);
 
             using (new EditorGUILayout.HorizontalScope())
             {
                 GUILayout.FlexibleSpace();
 
-                if (GUILayout.Button("Generate", GUILayout.Width(120f)))
+                if (GUILayout.Button("生成", GUILayout.Width(120f)))
                 {
                     Generate();
                 }
             }
+        }
+
+        private static string EnsureSceneStateSuffix(string name)
+        {
+            return name.EndsWith("State") ? name : name + "State";
+        }
+
+        private static string BuildSceneStateContent(string moduleNamespace, string sceneStateName)
+        {
+            var className = EnsureSceneStateSuffix(sceneStateName);
+
+            return $@"using System;
+using Cysharp.Threading.Tasks;
+using JFramework.Unity;
+
+namespace {moduleNamespace}
+{{
+    public sealed class {className} : BaseSceneState
+    {{
+        public override async UniTask EnterAsync(ISceneContext sceneContext, object arg)
+        {{
+            await base.EnterAsync(sceneContext, arg);
+            throw new NotImplementedException();
+        }}
+
+        protected override string GetBGMClipName()
+        {{
+            throw new NotImplementedException();
+        }}
+
+        protected override string GetSceneName()
+        {{
+            throw new NotImplementedException();
+        }}
+
+        protected override string GetUISettingsName()
+        {{
+            throw new NotImplementedException();
+        }}
+    }}
+}}
+";
         }
 
         private void Generate()
@@ -56,71 +137,193 @@ namespace JFramework.Unity.EditorTools
             var safeModuleName = NormalizeIdentifier(moduleName);
             if (string.IsNullOrWhiteSpace(safeModuleName))
             {
-                EditorUtility.DisplayDialog("Invalid Name", "Please enter a valid C# identifier for the module name.", "OK");
+                EditorUtility.DisplayDialog("无效名称", "请输入合法的 C# 模块名。", "确定");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(namespaceRoot))
+            var safeNamespaceRoot = NormalizeNamespace(namespaceRoot);
+            if (string.IsNullOrWhiteSpace(safeNamespaceRoot))
             {
-                EditorUtility.DisplayDialog("Invalid Namespace", "Namespace root cannot be empty.", "OK");
+                EditorUtility.DisplayDialog("无效命名空间", "命名空间根不能为空，且必须是合法的 C# 命名空间。", "确定");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(targetFolder) || !targetFolder.StartsWith("Assets"))
+            if (string.IsNullOrWhiteSpace(selectedFolder) || !selectedFolder.StartsWith("Assets"))
             {
-                EditorUtility.DisplayDialog("Invalid Folder", "Target folder must be a valid Unity Assets path.", "OK");
+                EditorUtility.DisplayDialog("无效目录", "请先在 Project 视图中选择一个有效文件夹。", "确定");
                 return;
             }
 
-            var moduleFolder = CombineAssetPath(targetFolder, safeModuleName);
-            if (AssetDatabase.IsValidFolder(moduleFolder) || File.Exists(moduleFolder))
+            var normalizedSceneStateFolder = NormalizeAssetRelativeFolder(defaultSceneStateFolder);
+            var safeDefaultSceneStateTypeName = EnsureSceneStateSuffix(defaultSceneStateName);
+
+            if (createDefaultSceneState)
             {
-                EditorUtility.DisplayDialog("Folder Exists", $"Target folder already exists: {moduleFolder}", "OK");
+                var safeSceneStateName = NormalizeIdentifier(safeDefaultSceneStateTypeName);
+                if (string.IsNullOrWhiteSpace(safeSceneStateName))
+                {
+                    EditorUtility.DisplayDialog("无效名称", "默认SceneState名不能为空，且必须是合法的 C# 类型名。", "确定");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(normalizedSceneStateFolder))
+                {
+                    EditorUtility.DisplayDialog("无效目录", "SceneState目录不能为空。", "确定");
+                    return;
+                }
+
+                safeDefaultSceneStateTypeName = safeSceneStateName;
+            }
+            else
+            {
+                safeDefaultSceneStateTypeName = "SceneLoginState";
+            }
+
+            var moduleRootFolder = CombineAssetPath(selectedFolder, safeModuleName);
+            var modulesFolder = CombineAssetPath(moduleRootFolder, "Modules");
+            var sceneStateFolder = createDefaultSceneState
+                ? CombineAssetPath(moduleRootFolder, normalizedSceneStateFolder)
+                : string.Empty;
+
+            var controllersFolder = CombineAssetPath(moduleRootFolder, "Controllers");
+            var modelsFolder = CombineAssetPath(moduleRootFolder, "Models");
+            var viewsFolder = CombineAssetPath(moduleRootFolder, "Views");
+            var dtosFolder = CombineAssetPath(moduleRootFolder, "DTOs");
+
+            if (AssetDatabase.IsValidFolder(moduleRootFolder) || Directory.Exists(ToAbsolutePath(moduleRootFolder)))
+            {
+                EditorUtility.DisplayDialog("目录已存在", $"目标目录已存在：\n{moduleRootFolder}", "确定");
                 return;
             }
 
-            Directory.CreateDirectory(ToAbsolutePath(moduleFolder));
+            Directory.CreateDirectory(ToAbsolutePath(modulesFolder));
+            Directory.CreateDirectory(ToAbsolutePath(controllersFolder));
+            Directory.CreateDirectory(ToAbsolutePath(modelsFolder));
+            Directory.CreateDirectory(ToAbsolutePath(viewsFolder));
+            Directory.CreateDirectory(ToAbsolutePath(dtosFolder));
 
-            var moduleNamespace = $"{namespaceRoot}.{safeModuleName}";
-            var homeStateName = $"{safeModuleName}HomeState";
-            var modelName = $"{safeModuleName}StatusModel";
-            var controllerName = $"{safeModuleName}StartController";
-            var viewName = $"{safeModuleName}StatusView";
-
-            WriteFile(moduleFolder, $"{safeModuleName}GameModule.cs", BuildGameModuleContent(safeModuleName, moduleNamespace));
-            WriteFile(moduleFolder, $"{safeModuleName}RegistryModule.cs", BuildRegistryModuleContent(safeModuleName, moduleNamespace, homeStateName, modelName, controllerName, viewName));
-            WriteFile(moduleFolder, $"{safeModuleName}PresentationModule.cs", BuildPresentationModuleContent(safeModuleName, moduleNamespace));
-            WriteFile(moduleFolder, $"{safeModuleName}RuntimeModule.cs", BuildRuntimeModuleContent(safeModuleName, moduleNamespace, homeStateName));
-            WriteFile(moduleFolder, $"{homeStateName}.cs", BuildHomeStateContent(moduleNamespace, homeStateName, modelName, controllerName, viewName));
-            WriteFile(moduleFolder, $"{modelName}.cs", BuildModelContent(moduleNamespace, modelName));
-            WriteFile(moduleFolder, $"{controllerName}.cs", BuildControllerContent(moduleNamespace, controllerName, modelName));
-            WriteFile(moduleFolder, $"{viewName}.cs", BuildViewContent(moduleNamespace, viewName, modelName));
-            WriteFile(moduleFolder, "README.md", BuildReadmeContent(safeModuleName, homeStateName));
-
-            if (createEntry)
+            if (createDefaultSceneState)
             {
-                WriteFile(moduleFolder, $"{safeModuleName}Entry.cs", BuildEntryContent(safeModuleName, moduleNamespace));
+                Directory.CreateDirectory(ToAbsolutePath(sceneStateFolder));
             }
 
-            AssetDatabase.Refresh();
-            Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(moduleFolder);
-            EditorGUIUtility.PingObject(Selection.activeObject);
-            Close();
+            var moduleNamespace = $"{safeNamespaceRoot}.{safeModuleName}";
+
+            try
+            {
+                if (createEntry)
+                {
+                    WriteFileIfNotExists(modulesFolder, "GameEntry.cs", BuildEntryContent(moduleNamespace));
+                }
+
+                if (createFoundationModule)
+                {
+                    WriteFileIfNotExists(modulesFolder, "GameFoundationModule.cs", BuildFoundationModuleContent(moduleNamespace));
+                }
+
+                WriteFileIfNotExists(modulesFolder, "GameModules.cs", BuildGameModulesContent(moduleNamespace));
+                WriteFileIfNotExists(modulesFolder, "ModelRegistryModule.cs", BuildModelRegistryModuleContent(moduleNamespace));
+                WriteFileIfNotExists(modulesFolder, "ViewRegistryModule.cs", BuildViewRegistryModuleContent(moduleNamespace));
+                WriteFileIfNotExists(modulesFolder, "ControllerRegistryModule.cs", BuildControllerRegistryModuleContent(moduleNamespace));
+                WriteFileIfNotExists(modulesFolder, "SceneRegistryModule.cs", BuildSceneRegistryModuleContent(moduleNamespace, safeDefaultSceneStateTypeName));
+                WriteFileIfNotExists(modulesFolder, "InitializerModule.cs", BuildInitializerModuleContent(moduleNamespace));
+
+                if (createDefaultSceneState)
+                {
+                    var sceneStateFileName = safeDefaultSceneStateTypeName + ".cs";
+                    WriteFileIfNotExists(
+                        sceneStateFolder,
+                        sceneStateFileName,
+                        BuildSceneStateContent(moduleNamespace, safeDefaultSceneStateTypeName));
+                }
+
+                AssetDatabase.Refresh();
+
+                var folderAsset = AssetDatabase.LoadAssetAtPath<Object>(moduleRootFolder);
+                Selection.activeObject = folderAsset;
+                EditorGUIUtility.PingObject(folderAsset);
+
+                EditorUtility.DisplayDialog("完成", $"模板已生成到：\n{moduleRootFolder}", "确定");
+                Close();
+            }
+            catch (IOException exception)
+            {
+                EditorUtility.DisplayDialog("生成失败", exception.Message, "确定");
+            }
         }
 
-        private static string BuildGameModuleContent(string moduleName, string moduleNamespace)
+        private static string BuildEntryContent(string moduleNamespace)
+        {
+            return $@"using JFramework.Unity;
+using UnityEngine;
+
+namespace {moduleNamespace}
+{{
+    [DisallowMultipleComponent]
+    public sealed class GameEntry : MonoBehaviour
+    {{
+        private IJApp app;
+
+        private async void Start()
+        {{
+            app = new JAppBuilder()
+                .AddModule(new GameFoundationModule())
+                .AddModule(new GameModules())
+                .Build();
+
+            await app.RunAsync();
+        }}
+
+        private async void OnDestroy()
+        {{
+            if (app != null)
+            {{
+                await app.ShutdownAsync();
+            }}
+        }}
+    }}
+}}
+";
+        }
+
+        private static string BuildFoundationModuleContent(string moduleNamespace)
+        {
+            return $@"using JFramework;
+using JFramework.Game;
+using JFramework.Unity;
+
+namespace {moduleNamespace}
+{{
+    public class GameFoundationModule : DefaultFoundationModule
+    {{
+        public override void Install(IServiceRegistry services)
+        {{
+            base.Install(services);
+
+            // 这里用于安装游戏基础设施相关服务。
+            // 可在此注册日志、网络、配置、资源加载、性能监控等通用能力。
+            // 建议仅放置跨业务模块共享的基础服务。
+        }}
+    }}
+}}
+";
+        }
+
+        private static string BuildGameModulesContent(string moduleNamespace)
         {
             return $@"using JFramework.Unity;
 
 namespace {moduleNamespace}
 {{
-    public sealed class {moduleName}GameModule : IModuleInstaller
+    public sealed class GameModules : IModuleInstaller
     {{
         private static readonly IModuleInstaller[] Modules =
         {{
-            new {moduleName}RegistryModule(),
-            new {moduleName}PresentationModule(),
-            new {moduleName}RuntimeModule(),
+            new ModelRegistryModule(),
+            new ViewRegistryModule(),
+            new ControllerRegistryModule(),
+            new SceneRegistryModule(),
+            new InitializerModule(),
         }};
 
         public void Install(IServiceRegistry services)
@@ -135,75 +338,101 @@ namespace {moduleNamespace}
 ";
         }
 
-        private static string BuildRegistryModuleContent(string moduleName, string moduleNamespace, string stateName, string modelName, string controllerName, string viewName)
+        private static string BuildModelRegistryModuleContent(string moduleNamespace)
         {
             return $@"using JFramework.Unity;
 
 namespace {moduleNamespace}
 {{
-    public sealed class {moduleName}RegistryModule : IModuleInstaller
+    public sealed class ModelRegistryModule : IModuleInstaller
     {{
         public void Install(IServiceRegistry services)
         {{
             if (!services.TryResolve<IModelRegistry>(out _))
+            {{
                 services.AddSingleton<IModelRegistry>(new ModelRegistry());
+            }}
 
-            if (!services.TryResolve<IControllerRegistry>(out _))
-                services.AddSingleton<IControllerRegistry>(new ControllerRegistry());
+            var models = services.Resolve<IModelRegistry>();
 
+            // <auto-generated-model-registrations>
+            // </auto-generated-model-registrations>
+        }}
+    }}
+}}
+";
+        }
+
+        private static string BuildViewRegistryModuleContent(string moduleNamespace)
+        {
+            return $@"using JFramework.Unity;
+
+namespace {moduleNamespace}
+{{
+    public sealed class ViewRegistryModule : IModuleInstaller
+    {{
+        public void Install(IServiceRegistry services)
+        {{
             if (!services.TryResolve<IViewRegistry>(out _))
+            {{
                 services.AddSingleton<IViewRegistry>(new ViewRegistry());
+            }}
 
+            var views = services.Resolve<IViewRegistry>();
+
+            // <auto-generated-view-registrations>
+            // </auto-generated-view-registrations>
+        }}
+    }}
+}}
+";
+        }
+
+        private static string BuildControllerRegistryModuleContent(string moduleNamespace)
+        {
+            return $@"using JFramework.Unity;
+
+namespace {moduleNamespace}
+{{
+    public sealed class ControllerRegistryModule : IModuleInstaller
+    {{
+        public void Install(IServiceRegistry services)
+        {{
+            if (!services.TryResolve<IControllerRegistry>(out _))
+            {{
+                services.AddSingleton<IControllerRegistry>(new ControllerRegistry());
+            }}
+
+            var controllers = services.Resolve<IControllerRegistry>();
+
+            // <auto-generated-controller-registrations>
+            // </auto-generated-controller-registrations>
+        }}
+    }}
+}}
+";
+        }
+
+        private static string BuildSceneRegistryModuleContent(string moduleNamespace, string defaultSceneStateTypeName)
+        {
+            return $@"using JFramework.Unity;
+
+namespace {moduleNamespace}
+{{
+    public sealed class SceneRegistryModule : IModuleInstaller
+    {{
+        public void Install(IServiceRegistry services)
+        {{
             if (!services.TryResolve<ISceneStateRegistry>(out _))
                 services.AddSingleton<ISceneStateRegistry>(new SceneStateRegistry());
 
-            var models = services.Resolve<IModelRegistry>();
-            if (!models.TryGet<{modelName}>(out _))
-                models.Register(new {modelName}());
+            var sceneStates = services.Resolve<ISceneStateRegistry>();
 
-            var controllers = services.Resolve<IControllerRegistry>();
-            if (!controllers.TryGet<{controllerName}>(out _))
-                controllers.Register(new {controllerName}());
+            // <auto-generated-scene-state-registrations>
+            if (!sceneStates.TryGet<{defaultSceneStateTypeName}>(out _))
+                sceneStates.Register(new {defaultSceneStateTypeName}());
+            // </auto-generated-scene-state-registrations>
 
-            var views = services.Resolve<IViewRegistry>();
-            views.RegisterForScene(typeof({stateName}), new {viewName}());
-
-            var states = services.Resolve<ISceneStateRegistry>();
-            if (!states.TryGet<{stateName}>(out _))
-                states.Register(new {stateName}());
-        }}
-    }}
-}}
-";
-        }
-
-        private static string BuildPresentationModuleContent(string moduleName, string moduleNamespace)
-        {
-            return $@"using JFramework.Unity;
-
-namespace {moduleNamespace}
-{{
-    public sealed class {moduleName}PresentationModule : IModuleInstaller
-    {{
-        public void Install(IServiceRegistry services)
-        {{
-            // Keep presentation-specific registrations here when the module grows.
-        }}
-    }}
-}}
-";
-        }
-
-        private static string BuildRuntimeModuleContent(string moduleName, string moduleNamespace, string stateName)
-        {
-            return $@"using JFramework.Unity;
-
-namespace {moduleNamespace}
-{{
-    public sealed class {moduleName}RuntimeModule : IModuleInstaller
-    {{
-        public void Install(IServiceRegistry services)
-        {{
             if (!services.TryResolve<GameContext>(out var context))
             {{
                 context = new GameContext();
@@ -223,7 +452,7 @@ namespace {moduleNamespace}
                     new SceneFlowService(
                         services.Resolve<ISceneStateRegistry>(),
                         services.Resolve<ISceneContext>(),
-                        typeof({stateName})));
+                        typeof({defaultSceneStateTypeName})));
             }}
         }}
     }}
@@ -231,187 +460,33 @@ namespace {moduleNamespace}
 ";
         }
 
-        private static string BuildHomeStateContent(string moduleNamespace, string stateName, string modelName, string controllerName, string viewName)
-        {
-            return $@"using System;
-using Cysharp.Threading.Tasks;
-using JFramework.Unity;
-
-namespace {moduleNamespace}
-{{
-    public sealed class {stateName} : ISceneState
-    {{
-        public string Name => nameof({stateName});
-
-        public async UniTask EnterAsync(ISceneContext context, object arg)
-        {{
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
-
-            var gameContext = new GameContext
-            {{
-                Services = context.Services
-            }};
-
-            var controller = context.Controllers.Get<{controllerName}>();
-            await controller.Do(gameContext);
-
-            var model = context.Models.Get<{modelName}>();
-            var views = context.Views.GetViewsForScene(typeof({stateName}));
-            foreach (var view in views)
-            {{
-                view.Start(gameContext);
-                view.Open(new ViewData {{ prefabName = model.ViewName }});
-            }}
-        }}
-
-        public UniTask ExitAsync()
-        {{
-            return UniTask.CompletedTask;
-        }}
-    }}
-}}
-";
-        }
-
-        private static string BuildModelContent(string moduleNamespace, string modelName)
-        {
-            return $@"namespace {moduleNamespace}
-{{
-    public sealed class {modelName}
-    {{
-        public string StageName {{ get; set; }} = ""{modelName.Replace("StatusModel", "Stage")}"";
-
-        public string ViewName {{ get; set; }} = ""{modelName.Replace("StatusModel", "StatusView")}"";
-
-        public int RecommendedPower {{ get; set; }} = 1000;
-
-        public bool Ready {{ get; set; }}
-    }}
-}}
-";
-        }
-
-        private static string BuildControllerContent(string moduleNamespace, string controllerName, string modelName)
-        {
-            return $@"using System.Threading.Tasks;
-using JFramework.Unity;
-using UnityEngine;
-
-namespace {moduleNamespace}
-{{
-    public sealed class {controllerName} : Controller
-    {{
-        public override Task Do(GameContext context, params object[] parameters)
-        {{
-            var services = context?.Services
-                ?? throw new System.InvalidOperationException(""GameContext.Services is required."");
-
-            var model = services.Resolve<IModelRegistry>().Get<{modelName}>();
-            model.Ready = true;
-
-            Debug.Log($""[{moduleNamespace}] Ready for stage {{model.StageName}}, recommended power {{model.RecommendedPower}}."");
-            return Task.CompletedTask;
-        }}
-    }}
-}}
-";
-        }
-
-        private static string BuildViewContent(string moduleNamespace, string viewName, string modelName)
+        private static string BuildInitializerModuleContent(string moduleNamespace)
         {
             return $@"using JFramework.Unity;
-using UnityEngine;
 
 namespace {moduleNamespace}
 {{
-    public sealed class {viewName} : View
+    public sealed class InitializerModule : IModuleInstaller
     {{
-        public override void Open<TArg>(TArg args)
+        public void Install(IServiceRegistry services)
         {{
-            var model = context.Services.Resolve<IModelRegistry>().Get<{modelName}>();
-            Debug.Log($""[{viewName}] Open stage={{model.StageName}}, power={{model.RecommendedPower}}, ready={{model.Ready}}"");
-        }}
-
-        public override void Close()
-        {{
-            Debug.Log(""{viewName} Close"");
-        }}
-
-        public override void Refresh<TArg>(TArg args)
-        {{
-            var model = context.Services.Resolve<IModelRegistry>().Get<{modelName}>();
-            Debug.Log($""[{viewName}] Refresh stage={{model.StageName}}, ready={{model.Ready}}"");
+            // 在这里执行模块初始化逻辑。
+            // 例如：
+            // 1. 初始化配置表
+            // 2. 初始化网络连接
+            // 3. 进入默认场景状态
         }}
     }}
 }}
 ";
         }
 
-        private static string BuildEntryContent(string moduleName, string moduleNamespace)
-        {
-            return $@"using JFramework.Unity;
-using UnityEngine;
-
-namespace {moduleNamespace}
-{{
-    [DisallowMultipleComponent]
-    public sealed class {moduleName}Entry : MonoBehaviour
-    {{
-        private IJApp app;
-
-        private async void Start()
-        {{
-            app = new JAppBuilder()
-                .AddModule(new DefaultFoundationModule())
-                .AddModule(new {moduleName}GameModule())
-                .Build();
-
-            await app.RunAsync();
-        }}
-
-        private async void OnDestroy()
-        {{
-            if (app != null)
-            {{
-                await app.ShutdownAsync();
-            }}
-        }}
-    }}
-}}
-";
-        }
-
-        private static string BuildReadmeContent(string moduleName, string stateName)
-        {
-            return $@"# {moduleName}
-
-This module scaffold was generated for the IJApp workflow.
-
-Generated files:
-
-- `{moduleName}GameModule.cs`
-- `{moduleName}RegistryModule.cs`
-- `{moduleName}PresentationModule.cs`
-- `{moduleName}RuntimeModule.cs`
-- `{stateName}.cs`
-- `{moduleName}StatusModel.cs`
-- `{moduleName}StartController.cs`
-- `{moduleName}StatusView.cs`
-- `{moduleName}Entry.cs` (optional)
-
-Recommended next steps:
-
-1. Replace sample logs with real business logic.
-2. Add more states and register them in `{moduleName}RegistryModule`.
-3. Split services into the module when the feature grows.
-4. Use this folder as the single source of truth for the module.
-";
-        }
-
-        private static void WriteFile(string assetFolder, string fileName, string content)
+        private static void WriteFileIfNotExists(string assetFolder, string fileName, string content)
         {
             var filePath = Path.Combine(ToAbsolutePath(assetFolder), fileName);
+            if (File.Exists(filePath))
+                throw new IOException($"文件已存在：{assetFolder}/{fileName}");
+
             File.WriteAllText(filePath, content, new UTF8Encoding(false));
         }
 
@@ -424,21 +499,48 @@ Recommended next steps:
             return Regex.IsMatch(trimmed, @"^[A-Za-z_][A-Za-z0-9_]*$") ? trimmed : string.Empty;
         }
 
+        private static string NormalizeNamespace(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var trimmed = value.Trim();
+            if (!Regex.IsMatch(trimmed, @"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$"))
+                return string.Empty;
+
+            return trimmed;
+        }
+
+        private static string NormalizeAssetRelativeFolder(string folder)
+        {
+            if (string.IsNullOrWhiteSpace(folder))
+                return string.Empty;
+
+            return folder.Trim().Trim('/').Trim('\\').Replace("\\", "/");
+        }
+
         private static string GetSelectedFolderOrDefault()
         {
+            return TryGetSelectedFolder(out var folder) ? folder : DefaultRootFolder;
+        }
+
+        private static bool TryGetSelectedFolder(out string folder)
+        {
+            folder = null;
+
             var selected = Selection.activeObject;
             if (selected == null)
-                return DefaultRootFolder;
+                return false;
 
             var path = AssetDatabase.GetAssetPath(selected);
             if (string.IsNullOrEmpty(path))
-                return DefaultRootFolder;
+                return false;
 
-            if (AssetDatabase.IsValidFolder(path))
-                return path;
+            if (!AssetDatabase.IsValidFolder(path))
+                return false;
 
-            var directory = Path.GetDirectoryName(path);
-            return string.IsNullOrEmpty(directory) ? DefaultRootFolder : directory.Replace("\\", "/");
+            folder = path;
+            return true;
         }
 
         private static string CombineAssetPath(string left, string right)

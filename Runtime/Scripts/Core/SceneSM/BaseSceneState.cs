@@ -12,7 +12,7 @@ namespace JFramework.Unity
     /// 默认的场景状态基类，提供了切换场景、初始化UI管理器、播放BGM等功能，子类只需要实现具体的场景类型、UI设置、BGM等信息即可
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
-    public abstract class BaseSceneState<TSceneType> : BaseStateAsync
+    public abstract class BaseSceneState : BaseStateAsync
     {
  
         protected List<View> viewControllers = new List<View>();
@@ -33,13 +33,13 @@ namespace JFramework.Unity
             try
             {
                 //切换到当前状态的场景
-                var scene = await SwitchScene(GetSceneType().ToString(), SceneMode.Additive);
+                var scene = await SwitchScene(GetSceneName(), SceneMode.Additive);
                 //设置为活动场景
                 SceneManager.SetActiveScene(scene);
             }
             catch (System.Exception e)
             {
-                Debug.LogError("切换场景失败 " + GetSceneType().ToString() + " " + e.ToString());
+                Debug.LogError("切换场景失败 " + GetSceneName() + " " + e.ToString());
                 throw;
             }
 
@@ -66,7 +66,7 @@ namespace JFramework.Unity
             StopAllViewControllers();
 
             // 卸载当前场景
-            AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(GetSceneType().ToString());
+            AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(GetSceneName());
 
             // 可选：等待卸载完成
             while (!asyncUnload.isDone)
@@ -85,7 +85,7 @@ namespace JFramework.Unity
             var views = GetViews();
             if(views == null || views.Length == 0)
             {
-                Debug.LogWarning("当前场景没有ViewController " + GetSceneType().ToString());
+                Debug.LogWarning("当前场景没有ViewController " + GetSceneName());
                 return;
             }
 
@@ -163,7 +163,7 @@ namespace JFramework.Unity
             }
         }
 
-        protected abstract TSceneType GetSceneType();
+        protected abstract string GetSceneName();
 
         protected abstract string GetBGMClipName();
 

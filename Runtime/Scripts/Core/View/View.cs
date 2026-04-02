@@ -53,8 +53,7 @@ namespace JFramework.Unity
 
         protected virtual IJUIManager GetUIManager()
         {
-            if (context?.Services != null &&
-                context.Services.TryResolve<IJUIManager>(out var uiManager))
+            if (context?.Services != null && context.Services.TryResolve<IJUIManager>(out var uiManager))
             {
                 return uiManager;
             }
