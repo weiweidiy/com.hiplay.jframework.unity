@@ -222,6 +222,7 @@ namespace {moduleNamespace}
                 }
 
                 WriteFileIfNotExists(modulesFolder, "GameModules.cs", BuildGameModulesContent(moduleNamespace));
+                WriteFileIfNotExists(modulesFolder, "GameOtherRegistryModule.cs", BuildGameOtherRegistryModuleContent(moduleNamespace));
                 WriteFileIfNotExists(modulesFolder, "ModelRegistryModule.cs", BuildModelRegistryModuleContent(moduleNamespace));
                 WriteFileIfNotExists(modulesFolder, "ViewRegistryModule.cs", BuildViewRegistryModuleContent(moduleNamespace));
                 WriteFileIfNotExists(modulesFolder, "ControllerRegistryModule.cs", BuildControllerRegistryModuleContent(moduleNamespace));
@@ -250,6 +251,56 @@ namespace {moduleNamespace}
             {
                 EditorUtility.DisplayDialog("生成失败", exception.Message, "确定");
             }
+        }
+
+        private static string BuildGameModulesContent(string moduleNamespace)
+        {
+            return $@"using JFramework.Unity;
+
+namespace {moduleNamespace}
+{{
+    public sealed class GameModules : IModuleInstaller
+    {{
+        private static readonly IModuleInstaller[] Modules =
+        {{
+            new ModelRegistryModule(),
+            new ViewRegistryModule(),
+            new ControllerRegistryModule(),
+            new SceneRegistryModule(),
+            new InitializerModule(),
+            new GameOtherRegistryModule(),
+        }};
+
+        public void Install(IServiceRegistry services)
+        {{
+            foreach (var module in Modules)
+            {{
+                module.Install(services);
+            }}
+        }}
+    }}
+}}
+";
+        }
+
+        private static string BuildGameOtherRegistryModuleContent(string moduleNamespace)
+        {
+            return $@"using JFramework.Unity;
+
+namespace {moduleNamespace}
+{{
+    /// <summary>
+    /// 所有游戏查询相关的功能都可以放在这个模块中，提供给其他模块使用。
+    /// </summary>
+    public class GameOtherRegistryModule : IModuleInstaller
+    {{
+        public void Install(IServiceRegistry services)
+        {{
+            
+        }}
+    }}
+}}
+";
         }
 
         private static string BuildEntryContent(string moduleNamespace)
@@ -309,34 +360,7 @@ namespace {moduleNamespace}
 ";
         }
 
-        private static string BuildGameModulesContent(string moduleNamespace)
-        {
-            return $@"using JFramework.Unity;
 
-namespace {moduleNamespace}
-{{
-    public sealed class GameModules : IModuleInstaller
-    {{
-        private static readonly IModuleInstaller[] Modules =
-        {{
-            new ModelRegistryModule(),
-            new ViewRegistryModule(),
-            new ControllerRegistryModule(),
-            new SceneRegistryModule(),
-            new InitializerModule(),
-        }};
-
-        public void Install(IServiceRegistry services)
-        {{
-            foreach (var module in Modules)
-            {{
-                module.Install(services);
-            }}
-        }}
-    }}
-}}
-";
-        }
 
         private static string BuildModelRegistryModuleContent(string moduleNamespace)
         {
