@@ -934,6 +934,10 @@ namespace {namespaceName}
             ? sanitizedModelName
             : sanitizedModelName + "Model";
 
+        var baseName = className.EndsWith("Model", StringComparison.Ordinal)
+            ? className.Substring(0, className.Length - "Model".Length)
+            : className;
+
         var filePath = Path.Combine(modelDirectory, $"{className}.cs");
         EnsureFileNotExists(filePath);
 
@@ -945,8 +949,19 @@ namespace {namespaceName}
 {{
     public class {className} : Model<{dtoType}>
     {{
+        // <auto-regist-model-events>
+        public class EventUpdate : Event {{ }}
+        // </auto-regist-model-events>
+
         public {className}(Func<{dtoType}, string> keySelector, EventManager eventManager) : base(keySelector, eventManager)
         {{
+        }}
+
+        public override void Update({dtoType} member)
+        {{
+            base.Update(member);
+
+            SendEvent<EventUpdate>(member);
         }}
     }}
 }}
