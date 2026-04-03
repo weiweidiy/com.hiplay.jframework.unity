@@ -63,7 +63,7 @@ namespace JFramework.Unity
         protected virtual void AddListeners() { }
         protected virtual void RemoveListeners() { }
 
-        protected IAssetsLoader GetAssetsLoader()
+        protected virtual IAssetsLoader GetAssetsLoader()
         {
             if (sceneContext?.Services != null &&
                 sceneContext.Services.TryResolve<IAssetsLoader>(out var assetsLoader))
@@ -74,7 +74,7 @@ namespace JFramework.Unity
             throw new InvalidOperationException("IAssetsLoader is not registered in IServiceRegistry.");
         }
 
-        protected IJUIManager GetUIManager()
+        protected virtual IJUIManager GetUIManager()
         {
             if (sceneContext?.Services != null &&
                 sceneContext.Services.TryResolve<IJUIManager>(out var uiManager))

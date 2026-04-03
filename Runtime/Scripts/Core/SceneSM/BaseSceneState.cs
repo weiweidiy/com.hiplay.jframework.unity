@@ -1,5 +1,6 @@
 ﻿
 using Cysharp.Threading.Tasks;
+using Game.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace JFramework.Unity
     /// <typeparam name="TContext"></typeparam>
     public abstract class BaseSceneState : BaseStateAsync
     {
- 
+
         protected List<View> viewControllers = new List<View>();
         /// <summary>
         /// 状态参数
@@ -52,7 +53,7 @@ namespace JFramework.Unity
             await GetUIManager().Initialize(GetUISettingsName());
 
             // 启动所有的ViewController
-            StartAllVeiwControllers();
+            StartAllVeiws();
 
             //播放场景BGM
             await PlayBGM();
@@ -63,7 +64,7 @@ namespace JFramework.Unity
             Debug.Log("OnExit " + this.GetType());
 
             // 清理ViewController
-            StopAllViewControllers();
+            StopAllViews();
 
             // 卸载当前场景
             AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(GetSceneName());
@@ -79,13 +80,13 @@ namespace JFramework.Unity
         /// <summary>
         /// 初始化场景所有的ViewController
         /// </summary>
-        protected  void StartAllVeiwControllers()
+        protected virtual void StartAllVeiws()
         {
             // 启动所有的ViewController
             var views = GetViews();
-            if(views == null || views.Length == 0)
+            if (views == null || views.Length == 0)
             {
-                Debug.LogWarning("当前场景没有ViewController " + GetSceneName());
+                Debug.LogWarning("当前场景没有View " + GetSceneName());
                 return;
             }
 
@@ -96,7 +97,7 @@ namespace JFramework.Unity
             }
         }
 
-        protected void StopAllViewControllers()
+        protected virtual void StopAllViews()
         {
             foreach (var controller in viewControllers)
             {
@@ -110,11 +111,16 @@ namespace JFramework.Unity
         /// 播放BGM
         /// </summary>
         /// <returns></returns>
-        protected async UniTask PlayBGM()
+        protected virtual async UniTask PlayBGM()
         {
             //显示背景音乐
-            //await gameAudioManager.PlayMusic(GetBGMClipName(), true, 0.5f);
-            await UniTask.CompletedTask;
+            if (sceneContext?.Services != null && sceneContext.Services.TryResolve<IGameAudioManager>(out var gameAudioManager))
+            {
+                if(gameAudioManager != null) 
+                    await gameAudioManager.PlayMusic(GetBGMClipName(), true, 0.5f);
+            }
+
+            //await UniTask.CompletedTask;
         }
 
         /// <summary>
@@ -132,7 +138,7 @@ namespace JFramework.Unity
         /// 获取当前状态下所有注册的ViewController，子类可以通过GetController<TView>()方法获取指定类型的ViewController
         /// </summary>
         /// <returns></returns>
-        protected View[] GetViews()
+        protected virtual View[] GetViews()
         {
             if (sceneContext?.Services != null &&
                 sceneContext.Services.TryResolve<IViewRegistry>(out var viewRegistry))
@@ -150,17 +156,14 @@ namespace JFramework.Unity
         /// </summary>
         /// <typeparam name="TView"></typeparam>
         /// <returns></returns>
-        protected TView GetController<TView>() where TView : View
+        protected virtual TView GetView<TView>() where TView : View
         {
-            try
-            {
-                return viewControllers.Where((ctrl) => ctrl is TView).FirstOrDefault() as TView;
-            }
-            catch(Exception e)
-            {
-                Debug.LogError("GetController " + typeof(TView).ToString() + " failed! " + e.ToString());
-                throw;
-            }
+            var view = viewControllers.Where((ctrl) => ctrl is TView).FirstOrDefault() as TView;
+
+            if (view == null)
+                throw new Exception($"GetController {typeof(TView).ToString()}  failed! : 没有找到View{typeof(TView).ToString()} 请使用工具JFrameworkTools->业务模块代码生成器->刷新注册类" );
+
+            return view;
         }
 
         protected abstract string GetSceneName();
@@ -169,13 +172,6 @@ namespace JFramework.Unity
 
         protected abstract string GetUISettingsName();
 
-        //void CheckInject()
-        //{
-        //    if (gameObjectManager == null)
-        //        throw new System.Exception(this.GetType().ToString() + " Inject TiktokGameObjectManager failed!");
 
-        //    if (uiManager == null)
-        //        throw new System.Exception(this.GetType().ToString() + " Inject uiManager failed!");
-        //}
     }
 }
