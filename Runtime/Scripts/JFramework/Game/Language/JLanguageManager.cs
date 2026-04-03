@@ -23,7 +23,12 @@ namespace JFramework
         /// <param name="languages"></param>
         public virtual void Initialize(ILanguage[] languages)
         {
+            if(languages == null || languages.Length == 0) 
+                throw new ArgumentNullException("语言包参数不能为空");
+
             AddRange(languages);
+
+            SetCurLanguage(languages[0]);
         }
 
         /// <summary>
