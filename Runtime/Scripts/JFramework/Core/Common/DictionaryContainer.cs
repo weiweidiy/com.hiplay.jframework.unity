@@ -20,7 +20,7 @@ namespace JFramework
             _keySelector = keySelector ?? throw new ArgumentNullException(nameof(keySelector));
         }
 
-        public void Add(T member)
+        public virtual void Add(T member)
         {
             if (member == null) throw new ArgumentNullException(nameof(member));
 
@@ -35,7 +35,7 @@ namespace JFramework
             onItemAdded?.Invoke(new List<T> { member });
         }
 
-        public void AddRange(IEnumerable<T> collection)
+        public virtual void AddRange(IEnumerable<T> collection)
         {
             if (collection == null) throw new ArgumentNullException(nameof(collection));
 
@@ -58,7 +58,7 @@ namespace JFramework
             }
         }
 
-        public void Clear()
+        public virtual void Clear()
         {
             // 原子操作：获取并清除所有项
             var items = _dictionary.Values.ToList();
@@ -72,7 +72,7 @@ namespace JFramework
 
         public int Count() => _dictionary.Count;
 
-        public T Get(string uid)
+        public virtual T Get(string uid)
         {
             if (string.IsNullOrWhiteSpace(uid))
                 throw new ArgumentNullException(nameof(uid));
@@ -82,7 +82,7 @@ namespace JFramework
                 : default;
         }
 
-        public List<T> Get(Predicate<T> predicate)
+        public virtual List<T> Get(Predicate<T> predicate)
         {
             if (predicate == null) throw new ArgumentNullException(nameof(predicate));
 
@@ -90,9 +90,9 @@ namespace JFramework
             return _dictionary.Values.Where(x => predicate(x)).ToList();
         }
 
-        public List<T> GetAll() => _dictionary.Values.ToList();
+        public virtual List<T> GetAll() => _dictionary.Values.ToList();
 
-        public bool Remove(string uid)
+        public virtual bool Remove(string uid)
         {
             if (string.IsNullOrWhiteSpace(uid))
                 throw new ArgumentNullException(nameof(uid));
@@ -105,7 +105,7 @@ namespace JFramework
             return true;
         }
 
-        public void Update(T member)
+        public virtual void Update(T member)
         {
             if (member == null) throw new ArgumentNullException(nameof(member));
 
@@ -128,7 +128,7 @@ namespace JFramework
             }
         }
 
-        public bool TryGet(string uid, out T item)
+        public virtual bool TryGet(string uid, out T item)
         {
             if (string.IsNullOrWhiteSpace(uid))
             {

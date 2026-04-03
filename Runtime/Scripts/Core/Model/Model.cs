@@ -28,6 +28,9 @@ namespace JFramework.Unity
         /// <param name="lstData"></param>
         public void Initialize(List<TData> lstData)
         {
+            if(lstData == null)
+                lstData = new List<TData>();
+
             // 清空当前数据
             Clear();
             // 批量添加新数据
