@@ -1,6 +1,7 @@
 using Game.Common;
 using JFramework;
 using JFramework.Game;
+using System;
 
 namespace JFramework.Unity
 {
@@ -159,6 +160,17 @@ namespace JFramework.Unity
             return dataStore;
         }
 
+        protected virtual ILanguageManager InstallLanguageManager(IServiceRegistry services)
+        {
+            if (!services.TryResolve<ILanguageManager>(out var languageManager))
+            {
+                Func<ILanguage,string> func = (l)=>l.Uid;
+                languageManager = new JLanguageManager(func);
+                services.AddSingleton<ILanguageManager>(languageManager);
+            }
+            return languageManager;
+        }
+
         public virtual void Install(IServiceRegistry services)
         {
             var assetsLoader = InstallAssetsLoader(services);
@@ -176,6 +188,7 @@ namespace JFramework.Unity
             var audioManager = InstallGameAudioManager(services, assetsLoader);
             var dataManager = InstallDataManager(services, dataConverter);
             var dataStore = InstallGameDataStore(services, dataManager);
+            var languageManager = InstallLanguageManager(services);
         }
     }
 }
