@@ -116,11 +116,11 @@ namespace JFramework.Unity
             //显示背景音乐
             if (sceneContext?.Services != null && sceneContext.Services.TryResolve<IGameAudioManager>(out var gameAudioManager))
             {
-                if(gameAudioManager != null) 
-                    await gameAudioManager.PlayMusic(GetBGMClipName(), true, 0.5f);
+                var bgm = GetBGMClipName();
+                if (gameAudioManager != null && bgm != null && bgm != "") 
+                    await gameAudioManager.PlayMusic(bgm, true, 0.5f);
             }
-
-            //await UniTask.CompletedTask;
+            return;
         }
 
         /// <summary>
