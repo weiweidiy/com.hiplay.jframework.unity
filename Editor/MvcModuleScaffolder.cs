@@ -41,6 +41,7 @@ public sealed class MvcModuleScaffolder : EditorWindow
     private const string ModelRegistryFileKey = PrefsPrefix + "ModelRegistryFile";
     private const string ViewRegistryFileKey = PrefsPrefix + "ViewRegistryFile";
     private const string SceneStateRegistryFileKey = PrefsPrefix + "SceneStateRegistryFile";
+    private const string CreateControllerArgsKey = PrefsPrefix + "CreateControllerArgs";
 
     private string sceneStateName = string.Empty;
     private bool createSceneState = true;
@@ -56,6 +57,7 @@ public sealed class MvcModuleScaffolder : EditorWindow
     private bool createController = true;
     private bool createModel = true;
     private bool createView = true;
+    private bool createControllerArgs;
 
     private string controllerDirectory = DefaultControllerDir;
     private string modelDirectory = DefaultModelDir;
@@ -200,6 +202,7 @@ public sealed class MvcModuleScaffolder : EditorWindow
         using (new EditorGUI.DisabledScope(!createController))
         {
             controllerName = EditorGUILayout.TextField("Controller名", controllerName);
+            createControllerArgs = EditorGUILayout.ToggleLeft("生成强类型参数版本（额外创建 Args 类）", createControllerArgs);
         }
 
         using (new EditorGUI.DisabledScope(!createModel))
@@ -421,6 +424,7 @@ public sealed class MvcModuleScaffolder : EditorWindow
         modelRegistryFile = EditorPrefs.GetString(ModelRegistryFileKey, DefaultModelRegistryFile);
         viewRegistryFile = EditorPrefs.GetString(ViewRegistryFileKey, DefaultViewRegistryFile);
         sceneStateRegistryFile = EditorPrefs.GetString(SceneStateRegistryFileKey, DefaultSceneStateRegistryFile);
+        createControllerArgs = EditorPrefs.GetBool(CreateControllerArgsKey, false);
     }
 
     private void SavePreferences()
@@ -435,6 +439,7 @@ public sealed class MvcModuleScaffolder : EditorWindow
         EditorPrefs.SetString(ModelRegistryFileKey, modelRegistryFile);
         EditorPrefs.SetString(ViewRegistryFileKey, viewRegistryFile);
         EditorPrefs.SetString(SceneStateRegistryFileKey, sceneStateRegistryFile);
+        EditorPrefs.SetBool(CreateControllerArgsKey, createControllerArgs);
     }
 
     private static string GetExistingDirectory(string path)
@@ -651,8 +656,10 @@ public sealed class MvcModuleScaffolder : EditorWindow
 
             if (createController)
             {
-                var controllerPath = CreateControllerFile(sanitizedControllerName);
-                messageBuilder.AppendLine(controllerPath);
+                foreach (var controllerPath in CreateControllerFiles(sanitizedControllerName))
+                {
+                    messageBuilder.AppendLine(controllerPath);
+                }
             }
 
             if (createModel)
@@ -896,7 +903,7 @@ namespace {namespaceName}
         File.WriteAllText(absolutePath, content, new UTF8Encoding(false));
     }
 
-    private string CreateControllerFile(string sanitizedControllerName)
+    private IEnumerable<string> CreateControllerFiles(string sanitizedControllerName)
     {
         EnsureDirectoryExists(controllerDirectory);
 
@@ -907,6 +914,43 @@ namespace {namespaceName}
         var filePath = Path.Combine(controllerDirectory, $"{className}.cs");
         EnsureFileNotExists(filePath);
 
+        if (createControllerArgs)
+        {
+            var argsClassName = className + "Args";
+            var argsFilePath = Path.Combine(controllerDirectory, $"{argsClassName}.cs");
+            EnsureFileNotExists(argsFilePath);
+
+            var argsContent = $@"namespace {namespaceName}
+{{
+    public sealed class {argsClassName}
+    {{
+    }}
+}}
+";
+
+            var typedControllerContent = $@"using System.Threading.Tasks;
+using JFramework.Unity;
+
+namespace {namespaceName}
+{{
+    public class {className} : Controller<{argsClassName}>
+    {{
+        public override Task Do(GameContext context, {argsClassName} args)
+        {{
+            return Task.CompletedTask;
+        }}
+    }}
+}}
+";
+
+            File.WriteAllText(ToAbsolutePath(argsFilePath), argsContent, new UTF8Encoding(false));
+            File.WriteAllText(ToAbsolutePath(filePath), typedControllerContent, new UTF8Encoding(false));
+
+            yield return argsFilePath;
+            yield return filePath;
+            yield break;
+        }
+
         var content = $@"using System.Threading.Tasks;
 using JFramework.Unity;
 
@@ -914,7 +958,7 @@ namespace {namespaceName}
 {{
     public class {className} : Controller
     {{
-        public override Task Do(GameContext context, params object[] parameters)
+        public override Task Do(GameContext context)
         {{
             return Task.CompletedTask;
         }}
@@ -923,7 +967,7 @@ namespace {namespaceName}
 ";
 
         File.WriteAllText(ToAbsolutePath(filePath), content, new UTF8Encoding(false));
-        return filePath;
+        yield return filePath;
     }
 
     private string CreateModelFile(string sanitizedModelName)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace JFramework.Unity
 {
@@ -38,6 +39,16 @@ namespace JFramework.Unity
 
             controller = null;
             return false;
+        }
+
+        public Task Do<TController>(GameContext context) where TController : Controller
+        {
+            return Get<TController>().Do(context);
+        }
+
+        public Task Do<TController, TArgs>(GameContext context, TArgs args) where TController : Controller<TArgs>
+        {
+            return Get<TController>().Do(context, args);
         }
     }
 }

@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace JFramework.Unity
 {
     public interface IControllerRegistry
@@ -9,5 +11,9 @@ namespace JFramework.Unity
         TController Get<TController>() where TController : Controller;
 
         bool TryGet<TController>(out TController controller) where TController : Controller;
+
+        Task Do<TController>(GameContext context) where TController : Controller;
+
+        Task Do<TController, TArgs>(GameContext context, TArgs args) where TController : Controller<TArgs>;
     }
 }
